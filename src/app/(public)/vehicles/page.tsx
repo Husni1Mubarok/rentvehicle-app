@@ -14,7 +14,7 @@ interface ApiResponse {
   total: number;
 }
 
-export default function VehiclesPage() {
+function VehiclesContent() {
   const searchParams = useSearchParams();
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [page, setPage] = useState<number>(Number(searchParams.get('page') ?? '1'));
@@ -133,6 +133,14 @@ export default function VehiclesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VehiclesPage() {
+  return (
+    <React.Suspense fallback={<div className="py-24 flex justify-center"><LoadingSpinner /></div>}>
+      <VehiclesContent />
+    </React.Suspense>
   );
 }
 

@@ -22,7 +22,7 @@ interface VehicleDetail {
   description: string;
 }
 
-export default function VehicleDetailPage() {
+function VehicleDetailContent() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -291,6 +291,14 @@ export default function VehicleDetailPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function VehicleDetailPage() {
+  return (
+    <React.Suspense fallback={<div className="py-24 flex justify-center"><LoadingSpinner /></div>}>
+      <VehicleDetailContent />
+    </React.Suspense>
   );
 }
 
