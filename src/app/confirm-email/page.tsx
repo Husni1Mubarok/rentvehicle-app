@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ConfirmEmailPage() {
+function ConfirmEmailContent() {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -78,3 +78,18 @@ export default function ConfirmEmailPage() {
     </section>
   );
 }
+
+export default function ConfirmEmailPage() {
+  return (
+    <React.Suspense fallback={
+      <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-700 via-purple-800 to-pink-600 p-4">
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 w-full max-w-md text-center shadow-lg">
+          <p className="text-white">Loading...</p>
+        </div>
+      </section>
+    }>
+      <ConfirmEmailContent />
+    </React.Suspense>
+  );
+}
+
