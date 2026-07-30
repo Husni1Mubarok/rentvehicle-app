@@ -4,7 +4,7 @@ import { createClient } from "@/lib/db/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-export async function login(formData: FormData) {
+export async function login(formData: FormData, redirectTo: string = "/") {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const supabase = await createClient();
@@ -19,13 +19,14 @@ export async function login(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect(redirectTo);
 }
 
 export async function register(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const name = formData.get("name") as string;
+  const phone = formData.get("phone") as string;
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signUp({
@@ -34,6 +35,7 @@ export async function register(formData: FormData) {
     options: {
       data: {
         name,
+        phone,
       },
     },
   });

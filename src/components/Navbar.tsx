@@ -1,9 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { getSession } from "@/data";
+import { getSession, setSession, clearSession } from "@/data";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const navLinks = [
   { href: "/", label: "Beranda" },
@@ -23,8 +29,29 @@ export default function Navbar() {
   const [session, setSessionState] = useState<{ nama?: string; role?: string } | null>(null);
 
   useEffect(() => {
-    const s = getSession();
-    setSessionState(s as { nama?: string; role?: string } | null);
+    async function syncSession() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        const sessionUser = {
+          id: user.id,
+          email: user.email,
+          nama: profile?.name || user.user_metadata?.name || user.email?.split("@")[0],
+          role: profile?.role || "customer"
+        };
+        setSession(sessionUser);
+        setSessionState(sessionUser);
+      } else {
+        clearSession();
+        setSessionState(null);
+      }
+    }
+    syncSession();
   }, [pathname]);
 
   useEffect(() => {
@@ -48,12 +75,21 @@ export default function Navbar() {
     }
   };
 
+  if (isAuthPage) return null;
+
   return (
     <header className="fixed top-0 w-full z-50 bg-white border-b border-gray-100 shadow-sm">
       <nav className="flex items-center justify-between px-6 md:px-10 py-3 max-w-7xl mx-auto">
         {/* Logo */}
-        <Link href="/" className="text-xl font-black tracking-tight text-blue-600">
-          RentVehicle
+        <Link href="/" className="flex items-center gap-2 text-xl font-black tracking-tight text-blue-600">
+          <Image
+            src="/logo.png"
+            alt="RentVehicle Logo"
+            width={28}
+            height={28}
+            className="object-contain rounded-md"
+          />
+          <span>RentVehicle</span>
         </Link>
 
         {!isAuthPage && (
