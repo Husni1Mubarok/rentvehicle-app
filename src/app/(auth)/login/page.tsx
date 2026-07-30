@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useActionState, useState } from "react";
+import { useActionState, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { login } from "../actions";
 
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
 
@@ -577,5 +577,13 @@ export default function LoginPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
