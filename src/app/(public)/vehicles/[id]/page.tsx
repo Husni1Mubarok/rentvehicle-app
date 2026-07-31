@@ -1,13 +1,12 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
-import VehicleModal from '@/components/VehicleModal';
 import { getSession } from '@/data';
-
+import { supabase } from '@/lib/supabaseClient';
 interface VehicleDetail {
   id: string;
   name: string;
@@ -25,12 +24,17 @@ interface VehicleDetail {
 function VehicleDetailContent() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [vehicle, setVehicle] = useState<VehicleDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const showModal = searchParams.get('action') === 'sewa';
+  const [session, setSession] = useState<any>(undefined);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+    });
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -57,11 +61,10 @@ function VehicleDetailContent() {
   const imagesToShow = vehicle.images && vehicle.images.length > 0 ? vehicle.images : [{ image_url: '🚐', is_primary: true }];
 
   const handleBookingRedirect = () => {
-    const session = getSession();
     if (session) {
-      router.push(`/vehicles/${vehicle.id}?action=sewa`);
+      router.push(`/booking/${vehicle.id}`);
     } else {
-      router.push(`/login?redirect=/vehicles/${vehicle.id}?action=sewa`);
+      router.push(`/login?redirect=/booking/${vehicle.id}`);
     }
   };
 
@@ -84,7 +87,7 @@ function VehicleDetailContent() {
             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
               <div className="relative h-[320px] md:h-[400px] w-full rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-100">
                 {primaryImage && primaryImage.image_url.startsWith('http') ? (
-                  <Image src={primaryImage.image_url} alt={vehicle.name} fill className="object-cover" />
+                  <Image src={primaryImage.image_url} alt={vehicle.name} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" />
                 ) : (
                   <span className="text-8xl select-none">{primaryImage?.image_url || '🚐'}</span>
                 )}
@@ -93,7 +96,7 @@ function VehicleDetailContent() {
                 {imagesToShow.map((img, idx) => (
                   <div key={idx} className="relative h-20 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity">
                     {img.image_url.startsWith('http') ? (
-                      <Image src={img.image_url} alt="" fill className="object-cover" />
+                      <Image src={img.image_url} alt="" fill sizes="100px" className="object-cover" />
                     ) : (
                       <span className="text-3xl">{img.image_url}</span>
                     )}
@@ -266,30 +269,6 @@ function VehicleDetailContent() {
           </div>
         </div>
       </div>
-
-      {showModal && vehicle && (
-        <VehicleModal
-          vehicle={{
-            id: vehicle.id,
-            name: vehicle.name,
-            type: vehicle.type,
-            location: vehicle.location || 'Jakarta',
-            transmission: vehicle.transmission,
-            capacity: vehicle.capacity,
-            price_per_day: vehicle.price_per_day,
-            rating: vehicle.rating,
-            status: vehicle.status as any,
-            description: vehicle.description,
-            images: vehicle.images.map((img, idx) => ({
-              id: img.id || `${vehicle.id}-img-${idx}`,
-              vehicle_id: img.vehicle_id || vehicle.id,
-              image_url: img.image_url,
-              is_primary: img.is_primary
-            }))
-          }}
-          onClose={() => router.push(`/vehicles/${vehicle.id}`)}
-        />
-      )}
     </div>
   );
 }
@@ -301,4 +280,3 @@ export default function VehicleDetailPage() {
     </React.Suspense>
   );
 }
-

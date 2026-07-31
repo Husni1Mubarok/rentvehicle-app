@@ -5,11 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { getSession, setSession, clearSession } from "@/data";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from "@/lib/supabaseClient";
 
 const navLinks = [
   { href: "/", label: "Beranda" },
@@ -87,6 +83,7 @@ export default function Navbar() {
             alt="RentVehicle Logo"
             width={28}
             height={28}
+            style={{ width: "auto", height: "auto" }}
             className="object-contain rounded-md"
           />
           <span>RentVehicle</span>
@@ -94,7 +91,7 @@ export default function Navbar() {
 
         {!isAuthPage && (
           <>
-            {/* Desktop Nav */}
+            {/* Desktop Nav - Nav Links & Profile Icon Sejajar */}
             <div className="hidden md:flex items-center gap-8 text-[13px] font-semibold">
               {navLinks.map((link) => {
                 const active = pathname === link.href;
@@ -112,15 +109,13 @@ export default function Navbar() {
                   </Link>
                 );
               })}
-            </div>
 
-            {/* Right Side */}
-            <div className="flex items-center gap-3">
+              {/* Profile Icon Button - Sejajar langsung di dalam baris navigasi */}
               {session ? (
-                <div ref={profileRef} className="relative">
+                <div ref={profileRef} className="relative flex items-center">
                   <button
                     onClick={() => setProfileOpen((prev) => !prev)}
-                    className="rounded-full bg-gray-100 p-2 hover:bg-gray-200 transition-colors flex items-center justify-center text-gray-700"
+                    className="rounded-full bg-gray-100 p-2.5 hover:bg-gray-200 transition-colors flex items-center justify-center text-gray-700 shadow-sm"
                     aria-label="Profil"
                     id="profile-menu-button"
                   >
@@ -129,7 +124,7 @@ export default function Navbar() {
                     </svg>
                   </button>
                   {profileOpen && (
-                    <div className="absolute right-0 mt-2 w-44 rounded-xl overflow-hidden bg-white border border-gray-100 shadow-2xl z-50">
+                    <div className="absolute right-0 top-full mt-2 w-44 rounded-xl overflow-hidden bg-white border border-gray-100 shadow-2xl z-50">
                       <Link
                         href="/profile"
                         onClick={() => setProfileOpen(false)}
@@ -156,10 +151,12 @@ export default function Navbar() {
                   Login
                 </Link>
               )}
+            </div>
 
-              {/* Mobile hamburger */}
+            {/* Mobile hamburger */}
+            <div className="flex md:hidden items-center gap-3">
               <button
-                className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+                className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
                 onClick={() => setMobileOpen((v) => !v)}
                 aria-label="Menu"
               >

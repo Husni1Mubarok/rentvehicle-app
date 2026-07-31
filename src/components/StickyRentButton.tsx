@@ -1,11 +1,22 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { getSession } from '@/data';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function StickyRentButton({ vehicleId }: { vehicleId: string }) {
-  const session = getSession();
-  const href = session ? `/vehicles/${vehicleId}?action=sewa` : `/login?redirect=/vehicles/${vehicleId}?action=sewa`;
+  const [session, setSession] = useState<any>(undefined);
+  
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+    });
+  }, []);
+
+  if (session === undefined) return null; // Or a skeleton
+
+  const href = session ? `/booking/${vehicleId}` : `/login?redirect=/booking/${vehicleId}`;
   return (
     <div
       id="sticky-rent-button"

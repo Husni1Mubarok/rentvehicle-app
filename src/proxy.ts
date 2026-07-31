@@ -46,10 +46,11 @@ export async function proxy(request: NextRequest) {
   // 1. Auth routes (/login, /register, dll)
   const isAuthRoute = currentPath === "/login" || currentPath === "/register" || currentPath === "/forgot-password" || currentPath === "/reset-password";
   if (isAuthRoute && user) {
+    const redirectTo = request.nextUrl.searchParams.get("redirect");
     if (role === "admin" || role === "super_admin") {
-      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+      return NextResponse.redirect(new URL(redirectTo || "/admin/dashboard", request.url));
     }
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL(redirectTo || "/dashboard", request.url));
   }
 
   // 2. Customer protected routes

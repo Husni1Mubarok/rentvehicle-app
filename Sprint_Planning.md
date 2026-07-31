@@ -1,4 +1,10 @@
-# Sprint Planning — RentVehicle (MVP)
+# Sprint Planning — RentVehicle (MVP) v2
+
+## Perubahan Utama dari Versi Sebelumnya
+- **Browse tanpa login**: user bisa lihat-lihat kendaraan (list, filter, detail) tanpa perlu daftar/login sama sekali — mirip flow web rental mobil Astra.
+- **Login baru muncul saat booking**: begitu user klik "Sewa Sekarang", sistem cek status login. Kalau belum login → diarahkan ke Login/Register dulu, setelah berhasil baru lanjut ke form booking.
+- **Navigasi disederhanakan jadi 4 menu**: Beranda, Kendaraan, Tentang Kami, dan Profil (kalau sudah login) / Login (kalau belum).
+- **Urutan sprint diubah** supaya sesuai urutan yang dialami user: lihat-lihat dulu → baru autentikasi → baru booking → baru bayar.
 
 ## Metode Pengembangan
 - **Framework:** Scrum
@@ -37,176 +43,195 @@ Menyiapkan seluruh kebutuhan pengembangan agar tim dapat mulai membangun aplikas
 - [x] Footer
 
 ## Acceptance Criteria
-
 - [x] Project berhasil dijalankan
 - [x] Database berhasil terkoneksi
 - [x] Landing Page tampil dengan baik
 
 ---
 
-# Sprint 1 — Authentication & Role Management
+# Sprint 1 — Landing Page, Navigasi & Browse Kendaraan (Tanpa Login)
 
 ## Tujuan
-Membangun sistem autentikasi dan hak akses pengguna.
+Memungkinkan siapa saja (belum login) mencari dan melihat detail kendaraan, dengan navigasi utama yang final.
+
+## Backlog
+
+### Navigasi Utama (Navbar)
+- [x] Menu **Beranda**
+- [x] Menu **Kendaraan**
+- [x] Menu **Tentang Kami**
+- [x] Menu **Profil** (jika sudah login) / **Login** (jika belum login) — kondisional berdasarkan status session
+- [x] Navbar responsive (mobile menu)
+
+### Landing Page (Beranda)
+- [x] Hero + Search Booking (input tanggal & lokasi, tanpa perlu login)
+- [x] Kategori Kendaraan
+- [x] Kendaraan Populer
+- [x] Responsive
+
+### Halaman Kendaraan (List)
+- [x] Daftar Kendaraan
+- [x] Search
+- [x] Filter (kategori, harga, transmisi, dll)
+- [x] Sorting
+- [x] Pagination
+- [x] Empty State (kendaraan tidak tersedia)
+
+### Detail Kendaraan
+- [x] Gallery Foto
+- [x] Informasi Kendaraan
+- [x] Harga
+- [x] Status Kendaraan (tersedia / tidak)
+- [x] Tombol **"Sewa Sekarang"** (belum memicu login di sprint ini — cek auth dilakukan di Sprint 3)
+
+### Halaman Tentang Kami
+- [x] Konten profil perusahaan
+- [x] Kontak / lokasi
+
+## Testing
+- [x] Semua halaman di atas bisa diakses tanpa login
+- [x] Search berjalan
+- [x] Filter berjalan
+- [x] Sorting berjalan
+- [x] Detail kendaraan tampil
+- [x] Navbar menampilkan menu yang benar sesuai status login
+
+## Acceptance Criteria
+- Pengunjung (belum login) dapat browsing, mencari, dan melihat detail kendaraan sepenuhnya
+- Navbar hanya berisi 4 menu sesuai ketentuan
+- Tidak ada fitur di sprint ini yang mewajibkan login
+
+---
+
+# Sprint 2 — Authentication & Role Management
+
+## Tujuan
+Membangun sistem autentikasi dan hak akses pengguna, sebagai prasyarat sebelum booking (Sprint 3).
 
 ## Backlog
 
 ### Authentication
-- [ ] Registrasi akun
-- [ ] Login
-- [ ] Logout
-- [ ] Forgot Password
-- [ ] Reset Password
-- [ ] Verifikasi Email
+- [x] Registrasi akun
+- [x] Login
+- [x] Logout
+- [x] Forgot Password
+- [x] Reset Password
+- [x] Verifikasi Email
 
 ### Role Management
-- [ ] Customer Role
-- [ ] Admin Role
-- [ ] Protected Route
-- [ ] Session Management
+- [x] Customer Role
+- [x] Admin Role
+- [x] Protected Route (khusus untuk halaman booking & dashboard di sprint berikutnya)
+- [x] Session Management
 
 ### Profil
-- [ ] Lihat Profil
-- [ ] Edit Profil
-- [ ] Ganti Password
+- [x] Lihat Profil
+- [x] Edit Profil
+- [x] Ganti Password
 
 ## Testing
-
-- [ ] Login berhasil
-- [ ] Login gagal
-- [ ] Logout
-- [ ] Reset Password
-- [ ] Hak akses sesuai role
+- [x] Login berhasil
+- [x] Login gagal
+- [x] Logout
+- [x] Reset Password
+- [x] Hak akses sesuai role
+- [x] Menu Navbar berubah dari "Login" jadi "Profil" setelah login berhasil
 
 ## Acceptance Criteria
-
-- User dapat login
+- User dapat register & login
 - Session berjalan
 - Hak akses sesuai role
+- Setelah login, navbar menampilkan menu Profil
 
 ---
 
-# Sprint 2 — Pencarian & Detail Kendaraan
+# Sprint 3 — Booking Kendaraan (Wajib Login)
 
 ## Tujuan
-Memungkinkan pengguna mencari dan melihat detail kendaraan tanpa login.
+Membangun proses booking sederhana. Login baru diwajibkan di titik ini — saat user menekan "Sewa Sekarang".
 
 ## Backlog
 
-### Landing Page
-- [ ] Search Booking
-- [ ] Kategori Kendaraan
-- [ ] Kendaraan Populer
-- [ ] Responsive
-
-### Vehicle List
-- [ ] Daftar Kendaraan
-- [ ] Search
-- [ ] Filter
-- [ ] Sorting
-- [ ] Pagination
-
-### Vehicle Detail
-- [ ] Gallery Foto
-- [ ] Informasi Kendaraan
-- [ ] Harga
-- [ ] Status Kendaraan
-- [ ] Tombol "Sewa Sekarang"
-
-### Empty State
-- [ ] Kendaraan tidak tersedia
-
-## Testing
-
-- [ ] Search berjalan
-- [ ] Filter berjalan
-- [ ] Sorting berjalan
-- [ ] Detail kendaraan tampil
-
-## Acceptance Criteria
-
-- Pengguna dapat mencari kendaraan
-- Pengguna dapat melihat detail kendaraan
-
----
-
-# Sprint 3 — Booking Kendaraan
-
-## Tujuan
-Membangun proses booking yang sederhana seperti pemesanan tiket bioskop.
-
-## Backlog
+### Alur Redirect ke Login
+- [x] Cek status login saat klik "Sewa Sekarang"
+- [x] Jika belum login → redirect ke halaman Login/Register, simpan intent kendaraan yang dipilih
+- [x] Setelah login sukses → otomatis lanjut ke form booking kendaraan yang tadi dipilih
 
 ### Booking
-- [ ] Pilih tanggal sewa
-- [ ] Cek ketersediaan kendaraan
-- [ ] Ringkasan booking
-- [ ] Upload KTP
-- [ ] Upload SIM
-- [ ] Konfirmasi booking
+- [x] Pilih tanggal sewa
+- [x] Cek ketersediaan kendaraan
+- [x] Ringkasan booking
+- [x] Upload KTP
+- [x] Upload SIM
+- [x] Konfirmasi booking
 
 ## Testing
-
-- [ ] Booking berhasil
-- [ ] Double booking ditolak
-- [ ] Upload dokumen berhasil
+- [x] User belum login diarahkan ke login saat booking
+- [x] Setelah login, kembali otomatis ke kendaraan yang tadi dipilih
+- [x] Booking berhasil
+- [x] Double booking ditolak
+- [x] Upload dokumen berhasil
 
 ## Acceptance Criteria
-
-- Booking berhasil dibuat
-- Data booking tersimpan
+- Booking hanya bisa dilakukan oleh user yang sudah login
+- Booking berhasil dibuat dan data tersimpan
 
 ---
 
-# Sprint 4 — Pembayaran
+# Sprint 4 — Pembayaran (Simulasi)
 
 ## Tujuan
-Mengintegrasikan proses pembayaran dan perubahan status booking.
+Membangun alur pembayaran dan perubahan status booking, tanpa integrasi payment gateway sungguhan. Perhitungan harga tetap berjalan normal, hanya eksekusi pembayarannya yang disimulasikan (auto-success/auto-failed, tidak connect ke bank/e-wallet asli).
 
 ## Backlog
 
-### Payment
-- [ ] Integrasi Midtrans
-- [ ] Pilih metode pembayaran
-- [ ] Status pembayaran
-- [ ] Halaman sukses
-- [ ] Halaman gagal
+### Perhitungan Harga
+- [x] Hitung total harga sewa (harga/hari × jumlah hari)
+- [x] Tampilkan rincian harga di Ringkasan Booking
+
+### Payment (Simulasi)
+- [x] Halaman Pilih Metode Pembayaran (tampilan saja — transfer bank, e-wallet, dll, tidak terhubung ke API pihak ketiga)
+- [x] Tombol "Simulasi Bayar Berhasil"
+- [x] Tombol "Simulasi Bayar Gagal" (untuk testing skenario gagal)
+- [x] Klik simulasi → langsung update status booking di database (tanpa verifikasi/webhook eksternal)
+- [x] Halaman sukses
+- [x] Halaman gagal
 
 ### Booking Status
-- [ ] Pending
-- [ ] Paid
-- [ ] Confirmed
-- [ ] Cancelled
+- [x] Pending
+- [x] Paid
+- [x] Confirmed
+- [x] Cancelled
 
 ### Notification
-- [ ] Notifikasi booking
-- [ ] Notifikasi pembayaran
+- [x] Notifikasi booking
+- [x] Notifikasi pembayaran
 
 ## Testing
-
-- [ ] Pembayaran berhasil
-- [ ] Pembayaran gagal
-- [ ] Status berubah otomatis
+- [x] Total harga terhitung benar
+- [x] Simulasi pembayaran berhasil → status berubah jadi Paid/Confirmed
+- [x] Simulasi pembayaran gagal → status berubah jadi Cancelled/Failed
+- [x] Status berubah otomatis sesuai hasil simulasi
 
 ## Acceptance Criteria
-
-- User berhasil melakukan pembayaran
-- Status booking berubah sesuai pembayaran
+- Total harga tampil dan terhitung dengan benar
+- User bisa menyelesaikan alur "pembayaran" lewat simulasi (tanpa payment gateway sungguhan)
+- Status booking berubah sesuai hasil simulasi
 
 ---
 
-# Sprint 5 — Dashboard
+# Sprint 5 — Dashboard Customer & Admin
 
 ## Tujuan
-Menyediakan dashboard untuk Customer dan Admin.
+Menyediakan dashboard untuk Customer dan Admin, diakses lewat menu Profil.
 
 ## Backlog
 
-### Dashboard Customer
-- [ ] Dashboard
-- [ ] Booking Saya
-- [ ] Riwayat Booking
-- [ ] Profil
+### Dashboard Customer (di dalam menu Profil)
+- [x] Ringkasan Akun
+- [x] Booking Saya
+- [x] Riwayat Booking
+- [x] Edit Profil (terhubung dengan Sprint 2)
 
 ### Dashboard Admin
 - [ ] Dashboard
@@ -215,22 +240,21 @@ Menyediakan dashboard untuk Customer dan Admin.
 - [ ] Verifikasi Pembayaran
 
 ## Testing
-
 - [ ] CRUD kendaraan
 - [ ] Dashboard berjalan
 - [ ] Data realtime
+- [ ] Customer hanya melihat data booking miliknya sendiri
 
 ## Acceptance Criteria
-
-- Customer melihat booking miliknya
+- Customer melihat booking miliknya lewat menu Profil
 - Admin mengelola kendaraan dan booking
 
 ---
 
-# Sprint 6 — Finishing & Deployment
+# Sprint 6 — Review, Laporan, Finishing & Deployment
 
 ## Tujuan
-Menyelesaikan MVP dan melakukan deployment.
+Melengkapi fitur pendukung, menyelesaikan MVP, dan deployment.
 
 ## Backlog
 
@@ -239,11 +263,11 @@ Menyelesaikan MVP dan melakukan deployment.
 - [ ] Ulasan
 
 ### Laporan
-- [ ] Laporan Booking
+- [ ] Laporan Booking (Admin)
 - [ ] Export PDF
 
 ### Testing
-- [ ] Functional Testing
+- [ ] Functional Testing (seluruh alur: browse → login → booking → bayar → dashboard)
 - [ ] Integration Testing
 - [ ] Bug Fix
 
@@ -253,8 +277,7 @@ Menyelesaikan MVP dan melakukan deployment.
 - [ ] Verifikasi Production
 
 ## Acceptance Criteria
-
-- Seluruh fitur MVP berjalan
+- Seluruh fitur MVP berjalan sesuai alur: browse bebas → login saat booking → bayar → dashboard
 - Tidak ada bug kritis
 - Aplikasi berhasil di-deploy
 
@@ -265,9 +288,80 @@ Menyelesaikan MVP dan melakukan deployment.
 | Sprint | Fokus | Output |
 |--------|-------|--------|
 | Sprint 0 | Persiapan Lingkungan | Project siap dikembangkan |
-| Sprint 1 | Authentication | Login, Register, Role Management |
-| Sprint 2 | Browse Kendaraan | Search, Filter, Detail Kendaraan |
-| Sprint 3 | Booking | Booking Kendaraan |
-| Sprint 4 | Pembayaran | Payment & Status Booking |
-| Sprint 5 | Dashboard | Dashboard Customer & Admin |
-| Sprint 6 | Finishing | Review, Testing & Deployment |
+| Sprint 1 | Landing, Navigasi & Browse | Beranda, 4 menu navbar, list & detail kendaraan tanpa login |
+| Sprint 2 | Authentication | Login, Register, Role Management, Profil |
+| Sprint 3 | Booking | Redirect login saat "Sewa Sekarang", proses booking |
+| Sprint 4 | Pembayaran (Simulasi) | Hitung harga, simulasi bayar, Status Booking |
+| Sprint 5 | Dashboard | Dashboard Customer (via Profil) & Admin |
+| Sprint 6 | Finishing | Review, Laporan, Testing & Deployment |
+
+# Diagram Alur Pengguna (User Flow)
+
+`[Halaman: Beranda]
+   Navbar: Beranda | Kendaraan | Tentang Kami | Login (belum login) / Profil (sudah login)
+        │
+        ├──> klik "Tentang Kami" ──> [Halaman: Tentang Kami] (jalur buntu, sekadar info)
+        │
+        └──> klik "Kendaraan" (atau search box di Beranda)
+                 │
+                 ▼
+        [Halaman: Daftar Kendaraan]
+           - Search
+           - Filter (kategori, harga, transmisi, dll)
+           - Sorting
+           - Pagination
+                 │
+                 ▼
+        [Halaman: Detail Kendaraan]
+           - Gallery foto, info, harga, status ketersediaan
+           - Tombol "Sewa Sekarang"
+                 │
+                 ▼
+        [Cek status login]
+                 │
+        ┌────────┴────────┐
+     belum login        sudah login
+        │                    │
+        ▼                    │
+[Halaman: Login/Register]     │
+   - Login / Daftar akun      │
+   - Setelah sukses, sistem   │
+     ingat kendaraan tadi     │
+        │                    │
+        └────────┬───────────┘
+                 ▼
+        [Halaman: Form Booking]
+           - Pilih tanggal mulai & selesai sewa
+           - Sistem cek ketersediaan di tanggal tsb
+                 │
+                 ▼
+        [Halaman: Upload Dokumen]
+           - Upload KTP
+           - Upload SIM
+                 │
+                 ▼
+        [Halaman: Ringkasan Booking]
+           - Kendaraan, tanggal, total harga (harga/hari × jumlah hari)
+           - Tombol "Lanjut ke Pembayaran"
+                 │
+                 ▼
+        [Halaman: Metode Pembayaran]
+           - Pilih metode (tampilan saja)
+           - Tombol "Bayar Sekarang"
+                 │
+                 ▼
+        [Halaman: Simulasi Pembayaran]
+           - Tombol "Simulasi Berhasil" / "Simulasi Gagal"
+                 │
+        ┌────────┴────────┐
+     Berhasil            Gagal
+        │                    │
+        ▼                    ▼
+[Halaman: Pembayaran      [Halaman: Pembayaran
+   Sukses]                   Gagal]
+   status: Confirmed         - Tombol "Coba Lagi"
+        │                    (balik ke Metode Pembayaran)
+        ▼
+[Menu: Profil > Booking Saya / Riwayat]
+   - Lihat status booking terbaru
+   - Beri Rating & Ulasan (setelah selesai sewa)

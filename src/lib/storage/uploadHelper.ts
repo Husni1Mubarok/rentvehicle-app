@@ -1,6 +1,6 @@
-import { supabase } from '@/lib/supabaseClient';
+import { SupabaseClient } from '@supabase/supabase-js';
 
-export async function uploadDocument(file: File, folderName: string): Promise<string> {
+export async function uploadDocument(supabase: SupabaseClient, file: File, folderName: string): Promise<string> {
   const fileExt = file.name.split('.').pop();
   const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
   const filePath = `${folderName}/${fileName}`;

@@ -5,7 +5,7 @@
  */
 import { Vehicle } from './types';
 
-export const MOCK_VEHICLES: Vehicle[] = [
+export let MOCK_VEHICLES: Vehicle[] = [
   {
     id: 'K001',
     name: 'Toyota Avanza',
@@ -17,7 +17,7 @@ export const MOCK_VEHICLES: Vehicle[] = [
     rating: 4.7,
     status: 'available',
     description: 'Nikmati perjalanan keluarga yang nyaman dengan Toyota Avanza. MPV yang andal untuk berbagai kebutuhan perjalanan dalam dan luar kota.',
-    images: [{ id: 'K001-img', vehicle_id: 'K001', image_url: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0729?auto=format&fit=crop&w=800&q=80', is_primary: true }],
+    images: [{ id: 'K001-img', vehicle_id: 'K001', image_url: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80', is_primary: true }],
   },
   {
     id: 'K002',
@@ -338,4 +338,24 @@ export function getMockVehicles(params: {
  */
 export function getMockVehicleById(id: string): Vehicle | null {
   return MOCK_VEHICLES.find((v) => v.id === id) ?? null;
+}
+
+export function addMockVehicle(vehicle: Vehicle) {
+  MOCK_VEHICLES.unshift(vehicle);
+  return vehicle;
+}
+
+export function updateMockVehicle(id: string, data: Partial<Vehicle>) {
+  const idx = MOCK_VEHICLES.findIndex(v => v.id === id);
+  if (idx > -1) {
+    MOCK_VEHICLES[idx] = { ...MOCK_VEHICLES[idx], ...data };
+    return MOCK_VEHICLES[idx];
+  }
+  return null;
+}
+
+export function deleteMockVehicle(id: string) {
+  const initialLength = MOCK_VEHICLES.length;
+  MOCK_VEHICLES = MOCK_VEHICLES.filter(v => v.id !== id);
+  return MOCK_VEHICLES.length < initialLength;
 }
