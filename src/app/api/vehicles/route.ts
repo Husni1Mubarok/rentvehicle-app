@@ -41,10 +41,29 @@ export async function GET(request: Request) {
       query = query.order('created_at', { ascending: false });
     }
 
-    const { data: vehicleData, error } = await query;
+    // Add timeout promise to avoid long hanging when Supabase free tier is sleeping
+    const fetchWithTimeout = async () => {
+      const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 3500));
+      const dbTask = Promise.all([
+        query,
+        supabase.from('vehicle_images').select('*')
+      ]);
+
+      const result = await Promise.race([dbTask, timeout]);
+      if (!result) {
+        console.warn('[API/Vehicles] Supabase request timed out, falling back to mock data');
+        return null;
+      }
+      return result;
+    };
+
+    const dbResult = await fetchWithTimeout();
+    const vehicleData = dbResult?.[0]?.data;
+    const imageList = dbResult?.[1]?.data;
+    const error = dbResult?.[0]?.error;
 
     if (error || !vehicleData) {
-      console.warn('[API/Vehicles] Supabase error, falling back to mock data:', error?.message);
+      console.warn('[API/Vehicles] Supabase error or timeout, falling back to mock data:', error?.message);
       // Fallback filtering on MOCK_VEHICLES
       let filtered = [...MOCK_VEHICLES];
       if (search) filtered = filtered.filter(v => v.name.toLowerCase().includes(search.toLowerCase()));
@@ -66,11 +85,11 @@ export async function GET(request: Request) {
       }
       const paged = filtered.slice(from, from + limit);
 
-      return NextResponse.json({ vehicles: paged, page: actualPage, limit, total });
+      return NextResponse.json(
+        { vehicles: paged, page: actualPage, limit, total },
+        { headers: { 'Cache-Control': 'public, max-age=15, stale-while-revalidate=60' } }
+      );
     }
-
-    // Fetch vehicle images separately to prevent relationship join errors
-    const { data: imageList } = await supabase.from('vehicle_images').select('*');
 
     const mappedVehicles = vehicleData.map((v) => {
       const vImages = imageList?.filter((img) => img.vehicle_id === v.id) || [];
@@ -89,15 +108,21 @@ export async function GET(request: Request) {
     }
     const paged = mappedVehicles.slice(from, from + limit);
 
-    return NextResponse.json({
-      vehicles: paged,
-      page: actualPage,
-      limit,
-      total,
-    });
+    return NextResponse.json(
+      {
+        vehicles: paged,
+        page: actualPage,
+        limit,
+        total,
+      },
+      { headers: { 'Cache-Control': 'public, max-age=15, stale-while-revalidate=60' } }
+    );
   } catch (err: any) {
     console.error('[API/Vehicles] Exception:', err);
-    return NextResponse.json({ vehicles: MOCK_VEHICLES.slice(0, 12), page: 1, limit: 12, total: MOCK_VEHICLES.length });
+    return NextResponse.json(
+      { vehicles: MOCK_VEHICLES.slice(0, 12), page: 1, limit: 12, total: MOCK_VEHICLES.length },
+      { headers: { 'Cache-Control': 'public, max-age=15, stale-while-revalidate=60' } }
+    );
   }
 }
 

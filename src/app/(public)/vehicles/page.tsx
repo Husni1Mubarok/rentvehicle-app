@@ -7,6 +7,8 @@ import PaginationControls from '@/components/PaginationControls';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
 
+import { MOCK_VEHICLES } from '@/lib/mockData';
+
 interface ApiResponse {
   vehicles: any[];
   page: number;
@@ -17,10 +19,10 @@ interface ApiResponse {
 function VehiclesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [vehicles, setVehicles] = useState<any[]>([]);
+  const [vehicles, setVehicles] = useState<any[]>(() => MOCK_VEHICLES.slice(0, 12));
   const [page, setPage] = useState<number>(Number(searchParams.get('page') ?? '1'));
-  const [total, setTotal] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [total, setTotal] = useState<number>(() => MOCK_VEHICLES.length);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   // Search Bar state

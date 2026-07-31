@@ -46,13 +46,14 @@ const features = [
   },
 ];
 
+import { MOCK_VEHICLES } from "@/lib/mockData";
+
 export default function LandingPage() {
   const [activeType, setActiveType] = useState("");
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [vehicles, setVehicles] = useState<Vehicle[]>(() => MOCK_VEHICLES.slice(0, 4));
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
     const params = new URLSearchParams();
     if (activeType) params.set("type", activeType);
     // Fetch only top 4 for the custom grid
@@ -60,8 +61,13 @@ export default function LandingPage() {
 
     fetch(`/api/vehicles?${params.toString()}`)
       .then((r) => r.json())
-      .then((d) => { setVehicles(d.vehicles ?? []); setLoading(false); })
-      .catch(() => { setVehicles([]); setLoading(false); });
+      .then((d) => {
+        if (d.vehicles && d.vehicles.length > 0) {
+          setVehicles(d.vehicles);
+        }
+        setLoading(false);
+      })
+      .catch(() => { setLoading(false); });
   }, [activeType]);
 
   const isUrl = (s: string) => {

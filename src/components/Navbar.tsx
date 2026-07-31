@@ -23,7 +23,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
-  const [session, setSessionState] = useState<{ nama?: string; role?: string } | null>(null);
+  const [session, setSessionState] = useState<{ nama?: string; role?: string } | null>(() => getSession());
 
   useEffect(() => {
     async function syncSession() {
@@ -36,25 +36,39 @@ export default function Navbar() {
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", user.id)
-          .single();
+      // Read local session first for fast UI render
+      const localSess = getSession();
+      if (localSess && !session) {
+        setSessionState(localSess);
+      }
 
-        const sessionUser = {
-          id: user.id,
-          email: user.email,
-          nama: profile?.name || user.user_metadata?.name || user.email?.split("@")[0],
-          role: profile?.role || "customer"
-        };
-        setSession(sessionUser);
-        setSessionState(sessionUser);
-      } else {
-        clearSession();
-        setSessionState(null);
+      try {
+        const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const authTask = supabase.auth.getUser();
+        const authRes = await Promise.race([authTask, timeout]);
+
+        const user = authRes?.data?.user;
+        if (user) {
+          const { data: profile } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+          const sessionUser = {
+            id: user.id,
+            email: user.email,
+            nama: profile?.name || user.user_metadata?.name || user.email?.split("@")[0],
+            role: profile?.role || "customer"
+          };
+          setSession(sessionUser);
+          setSessionState(sessionUser);
+        } else if (authRes !== null) {
+          clearSession();
+          setSessionState(null);
+        }
+      } catch (err) {
+        console.warn("[Navbar] Session sync error, using local session:", err);
       }
     }
     syncSession();
