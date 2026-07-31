@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import VehicleList from '@/components/VehicleList';
 import VehicleFilters from '@/components/VehicleFilters';
 import PaginationControls from '@/components/PaginationControls';
@@ -15,12 +15,17 @@ interface ApiResponse {
 }
 
 function VehiclesContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [page, setPage] = useState<number>(Number(searchParams.get('page') ?? '1'));
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Search Bar state
+  const [searchText, setSearchText] = useState(searchParams.get('search') ?? '');
+  const [sortValue, setSortValue] = useState(searchParams.get('sort') ?? 'price-low');
 
   const buildApiUrl = () => {
     const params = new URLSearchParams(searchParams.toString());
@@ -51,45 +56,51 @@ function VehiclesContent() {
 
   const totalPages = Math.ceil(total / 12);
 
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const params = new URLSearchParams(searchParams.toString());
+    if (searchText.trim()) {
+      params.set('search', searchText.trim());
+    } else {
+      params.delete('search');
+    }
+    params.set('page', '1');
+    router.push(`/vehicles?${params.toString()}`);
+  };
+
+  const handleSortChange = (newSort: string) => {
+    setSortValue(newSort);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('sort', newSort);
+    params.set('page', '1');
+    router.push(`/vehicles?${params.toString()}`);
+  };
+
   return (
     <div className="bg-[#f8fafc] min-h-screen pt-24 pb-16 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Top Search Bar / Pick Up Header Area */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-8 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-          <div className="flex flex-col">
-            <span className="text-xs font-semibold text-gray-400 mb-1.5">Lokasi Penjemputan</span>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">📍</span>
-              <input type="text" defaultValue="Jakarta, Indonesia" className="w-full bg-gray-50 border border-gray-100 rounded-xl py-2.5 pl-9 pr-3 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+        
+        {/* Top Keyword Search Bar */}
+        <form onSubmit={handleSearchSubmit} className="bg-white p-4 md:p-5 rounded-3xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] mb-8">
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <div className="relative flex-1 w-full">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-base">🔍</span>
+              <input 
+                type="text" 
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Cari kata kunci nama atau merk kendaraan (cth: Avanza, Innova, NMAX, Vespa)..." 
+                className="w-full bg-[#F8FAFC] border border-gray-100 rounded-2xl py-3.5 pl-11 pr-4 text-sm font-semibold text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" 
+              />
             </div>
-          </div>
-          
-          <div className="flex flex-col">
-            <span className="text-xs font-semibold text-gray-400 mb-1.5">Tanggal Sewa</span>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">📅</span>
-              <input type="text" placeholder="Pilih Tanggal" className="w-full bg-gray-50 border border-gray-100 rounded-xl py-2.5 pl-9 pr-3 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
-          </div>
-
-          <div className="flex flex-col">
-            <span className="text-xs font-semibold text-gray-400 mb-1.5">Waktu</span>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">⏰</span>
-              <select className="w-full bg-gray-50 border border-gray-100 rounded-xl py-2.5 pl-9 pr-3 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none">
-                <option>09:00 WIB</option>
-                <option>12:00 WIB</option>
-                <option>15:00 WIB</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex items-end h-full">
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl text-sm transition-colors flex items-center justify-center gap-2">
-              <span>🔍</span> Cari Kendaraan
+            <button 
+              type="submit"
+              className="w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-2xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              Cari Kendaraan
             </button>
           </div>
-        </div>
+        </form>
 
         {/* Main Content Area: Sidebar Filter + Grid List */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -105,15 +116,26 @@ function VehiclesContent() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Pilihan Kendaraan Untuk Anda</h2>
-                <p className="text-xs text-gray-500 font-medium mt-1">Menampilkan {total} kendaraan terbaik</p>
+                <p className="text-xs text-gray-500 font-medium mt-1">
+                  {searchParams.get('search') ? (
+                    <span>Hasil pencarian untuk <strong className="text-blue-600">"{searchParams.get('search')}"</strong> ({total} ditemukan)</span>
+                  ) : (
+                    <span>Menampilkan {total} kendaraan terbaik</span>
+                  )}
+                </p>
               </div>
               
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-gray-500">Urutkan:</span>
-                <select className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-800 focus:outline-none">
-                  <option>Harga: Terendah ke Tertinggi</option>
-                  <option>Harga: Tertinggi ke Terendah</option>
-                  <option>Populer</option>
+                <select 
+                  value={sortValue}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-800 focus:outline-none focus:border-blue-600 cursor-pointer"
+                >
+                  <option value="price-low">Harga: Terendah ke Tertinggi</option>
+                  <option value="price-high">Harga: Tertinggi ke Terendah</option>
+                  <option value="rating">Populer & Rating</option>
+                  <option value="newest">Terbaru</option>
                 </select>
               </div>
             </div>

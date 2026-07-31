@@ -120,9 +120,15 @@ export default function PaymentPage() {
             <div className="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">✓</div>
             <h1 className="text-2xl font-black text-gray-900 mb-2">Pembayaran Sukses!</h1>
             <p className="text-gray-500 mb-8">Booking Anda telah dikonfirmasi dan siap digunakan.</p>
-            <Link href="/profile" className="block w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20">
-              Lihat Booking Saya
-            </Link>
+            
+            <div className="space-y-3">
+              <Link href="/" className="block w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20">
+                Kembali ke Beranda
+              </Link>
+              <Link href="/profile" className="block w-full py-3.5 border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl transition-all">
+                Lihat Booking Saya (Riwayat)
+              </Link>
+            </div>
           </div>
         )}
 

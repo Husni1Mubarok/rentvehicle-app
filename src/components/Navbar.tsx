@@ -125,12 +125,21 @@ export default function Navbar() {
                   </button>
                   {profileOpen && (
                     <div className="absolute right-0 top-full mt-2 w-44 rounded-xl overflow-hidden bg-white border border-gray-100 shadow-2xl z-50">
+                      {session.role === 'admin' || session.role === 'super_admin' ? (
+                        <Link
+                          href="/admin/dashboard"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-sm font-bold text-blue-600 hover:bg-blue-50 transition-colors"
+                        >
+                          Dashboard Admin
+                        </Link>
+                      ) : null}
                       <Link
                         href="/profile"
                         onClick={() => setProfileOpen(false)}
                         className="flex w-full items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
-                        Profil
+                        Profil & Riwayat
                       </Link>
                       <div className="border-t border-gray-100" />
                       <button

@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     const end_date = formData.get('end_date') as string;
     const purpose = formData.get('purpose') as string;
     const total_price = formData.get('total_price') as string;
+    const form_user_id = formData.get('user_id') as string;
     
     const ktp_url = formData.get('ktp_url') as string;
     const sim_url = formData.get('sim_url') as string;
@@ -24,6 +25,8 @@ export async function POST(request: Request) {
     if (!vehicle_id || !borrower_name || !whatsapp_number || !start_date || !end_date || !ktp_url || !sim_url) {
       return NextResponse.json({ message: 'Semua field wajib diisi' }, { status: 400 });
     }
+
+    const effectiveUserId = user?.id || form_user_id || null;
 
     // Generate required schema fields
     const booking_code = `RV-${Date.now().toString(36).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
@@ -37,12 +40,12 @@ export async function POST(request: Request) {
     const total_day = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
     // Ensure user exists in public.users table to satisfy FK constraint
-    if (user?.id) {
+    if (effectiveUserId) {
       try {
         await supabase.from('users').upsert({
-          id: user.id,
+          id: effectiveUserId,
           name: borrower_name || 'Pelanggan',
-          email: user.email || `${user.id}@example.com`,
+          email: user?.email || `${effectiveUserId}@example.com`,
           phone: whatsapp_number || null
         }, { onConflict: 'id' });
       } catch (err) {
@@ -51,7 +54,7 @@ export async function POST(request: Request) {
     }
 
     const payload = {
-      user_id: user?.id,
+      user_id: effectiveUserId,
       booking_code,
       vehicle_id,
       pickup_date,

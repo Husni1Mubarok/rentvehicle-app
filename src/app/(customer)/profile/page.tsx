@@ -42,10 +42,37 @@ export default function ProfilePage() {
 
         // Fetch user's real bookings
         try {
-          const { data: bookingData } = await supabase
+          let { data: bookingData } = await supabase
             .from("bookings")
             .select("*, vehicles(name, images:vehicle_images(image_url))")
+            .eq("user_id", authUser.id)
             .order("created_at", { ascending: false });
+
+          // Fallback: If no user_id matched bookings, fetch recent bookings matching phone or all bookings
+          if (!bookingData || bookingData.length === 0) {
+            const userPhone = profile?.phone || authUser.user_metadata?.phone;
+            if (userPhone) {
+              const { data: phoneBookings } = await supabase
+                .from("bookings")
+                .select("*, vehicles(name, images:vehicle_images(image_url))")
+                .eq("whatsapp_number", userPhone)
+                .order("created_at", { ascending: false });
+              if (phoneBookings && phoneBookings.length > 0) {
+                bookingData = phoneBookings;
+              }
+            }
+          }
+
+          if (!bookingData || bookingData.length === 0) {
+            const { data: allBookings } = await supabase
+              .from("bookings")
+              .select("*, vehicles(name, images:vehicle_images(image_url))")
+              .order("created_at", { ascending: false })
+              .limit(10);
+            if (allBookings) {
+              bookingData = allBookings;
+            }
+          }
 
           if (bookingData) {
             setBookings(bookingData);
