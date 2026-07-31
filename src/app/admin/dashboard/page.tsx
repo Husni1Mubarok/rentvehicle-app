@@ -221,26 +221,50 @@ function AdminDashboardContent() {
   return (
     <div className="bg-[#f8fafc] min-h-screen pt-24 pb-16 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-black text-gray-900">Dashboard Admin</h1>
             <p className="text-gray-500">Kelola katalog produk kendaraan dan daftar booking penyewaan</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 hide-on-print">
             <button 
               onClick={() => openModal()} 
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5 hide-on-print"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all duration-150 active:scale-95 hover:-translate-y-0.5 shadow-md shadow-blue-600/20 flex items-center gap-1.5"
             >
               <span>+</span> Tambah Produk Kendaraan
             </button>
           </div>
         </div>
 
+        {/* Tab Switcher Pills */}
+        <div className="flex items-center gap-2 mb-6 bg-gray-100/80 p-1.5 rounded-2xl w-max border border-gray-200/60 hide-on-print">
+          <button
+            onClick={() => setActiveTab('vehicles')}
+            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 active:scale-95 flex items-center gap-2 ${
+              activeTab === 'vehicles'
+                ? 'bg-white text-blue-600 shadow-sm border border-gray-100'
+                : 'text-gray-500 hover:text-gray-800 hover:bg-white/50'
+            }`}
+          >
+            <span>🚗</span> Kelola Produk Kendaraan
+          </button>
+          <button
+            onClick={() => setActiveTab('bookings')}
+            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 active:scale-95 flex items-center gap-2 ${
+              activeTab === 'bookings'
+                ? 'bg-white text-blue-600 shadow-sm border border-gray-100'
+                : 'text-gray-500 hover:text-gray-800 hover:bg-white/50'
+            }`}
+          >
+            <span>📋</span> Laporan & Kelola Booking
+          </button>
+        </div>
+
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden print-container">
-          <div className="p-6">
+          <div key={activeTab} className="p-6 animate-page-slide">
             {/* TAB 1: KELOLA KENDARAAN */}
             {activeTab === 'vehicles' && (
-              <div className="animate-in fade-in duration-300">
+              <div>
                 <div className="flex justify-between items-center mb-4 hide-on-print">
                   <h2 className="text-xl font-bold text-gray-800">Daftar Produk Kendaraan</h2>
                 </div>
@@ -276,8 +300,8 @@ function AdminDashboardContent() {
                             <td className="px-4 py-3.5 text-gray-600 font-medium">{v.capacity} Orang</td>
                             <td className="px-4 py-3.5 font-bold text-blue-600">Rp {(v.price_per_day || 0).toLocaleString('id-ID')}</td>
                             <td className="px-4 py-3.5 text-right space-x-3 hide-on-print">
-                              <button onClick={() => openModal(v)} className="text-blue-600 font-bold hover:underline">Edit</button>
-                              <button onClick={() => handleDelete(v.id)} className="text-red-600 font-bold hover:underline">Hapus</button>
+                              <button onClick={() => openModal(v)} className="text-blue-600 font-bold hover:bg-blue-50 px-2.5 py-1 rounded-lg transition-all duration-150 active:scale-95">Edit</button>
+                              <button onClick={() => handleDelete(v.id)} className="text-red-600 font-bold hover:bg-red-50 px-2.5 py-1 rounded-lg transition-all duration-150 active:scale-95">Hapus</button>
                             </td>
                           </tr>
                         ))
@@ -303,53 +327,38 @@ function AdminDashboardContent() {
                       <h2 className="text-xl font-bold text-gray-800">Laporan & Kelola Booking</h2>
                       <p className="text-xs text-gray-500 font-medium">Ringkasan transaksi penyewaan kendaraan dan total pendapatan</p>
                     </div>
-                    <button onClick={printReport} className="bg-gray-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs hover:bg-gray-900 transition-colors hide-on-print flex items-center gap-2">
+                    <button onClick={printReport} className="bg-gray-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs hover:bg-gray-900 transition-all duration-150 active:scale-95 hover:-translate-y-0.5 hide-on-print flex items-center gap-2">
                       🖨️ Print / Cetak Laporan
                     </button>
                   </div>
 
-                  {/* Summary Stat Cards Total Pendapatan */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 hide-on-print">
-                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+                  {/* Summary Stat Cards Total Pendapatan & Total Booking */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 hide-on-print">
+                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
                       <div className="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xl font-bold shadow-md shadow-emerald-500/20">
                         💰
                       </div>
                       <div>
-                        <p className="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider">Pendapatan Disetujui / Lunas</p>
-                        <h3 className="text-xl font-extrabold text-emerald-950 mt-0.5">
-                          Rp {confirmedRevenue.toLocaleString('id-ID')}
-                        </h3>
-                        <p className="text-[10px] text-emerald-700 font-semibold mt-0.5">
-                          {confirmedBookings.length} pesanan terkonfirmasi
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/70 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
-                      <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl font-bold shadow-md shadow-blue-600/20">
-                        📊
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-extrabold text-blue-800 uppercase tracking-wider">Total Potensi Pendapatan</p>
-                        <h3 className="text-xl font-extrabold text-blue-950 mt-0.5">
+                        <p className="text-[11px] font-extrabold text-emerald-800 uppercase tracking-wider">Total Pendapatan</p>
+                        <h3 className="text-2xl font-extrabold text-emerald-950 mt-0.5">
                           Rp {totalRevenue.toLocaleString('id-ID')}
                         </h3>
-                        <p className="text-[10px] text-blue-700 font-semibold mt-0.5">
-                          Dari total {bookingsList.length} pesanan booking
+                        <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">
+                          {confirmedBookings.length} pesanan terkonfirmasi ({confirmedRevenue > 0 ? `Rp ${confirmedRevenue.toLocaleString('id-ID')} lunas` : 'lunas'})
                         </p>
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-purple-50 to-slate-50 border border-purple-200/70 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
-                      <div className="w-12 h-12 rounded-xl bg-purple-600 text-white flex items-center justify-center text-xl font-bold shadow-md shadow-purple-600/20">
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/70 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+                      <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl font-bold shadow-md shadow-blue-600/20">
                         📋
                       </div>
                       <div>
-                        <p className="text-[10px] font-extrabold text-purple-800 uppercase tracking-wider">Total Transaksi Booking</p>
-                        <h3 className="text-xl font-extrabold text-purple-950 mt-0.5">
+                        <p className="text-[11px] font-extrabold text-blue-800 uppercase tracking-wider">Total Booking</p>
+                        <h3 className="text-2xl font-extrabold text-blue-950 mt-0.5">
                           {bookingsList.length} Pesanan
                         </h3>
-                        <p className="text-[10px] text-purple-700 font-semibold mt-0.5">
+                        <p className="text-[11px] text-blue-700 font-semibold mt-0.5">
                           {bookingsList.length - confirmedBookings.length} pesanan pending/menunggu
                         </p>
                       </div>
@@ -408,7 +417,7 @@ function AdminDashboardContent() {
                                 <td className="px-4 py-3.5 text-center hide-on-print">
                                   <button 
                                     onClick={() => openDetailModal(b)} 
-                                    className="text-white bg-blue-600 hover:bg-blue-700 font-bold px-3 py-1.5 rounded-lg text-[10px] transition-colors"
+                                    className="text-white bg-blue-600 hover:bg-blue-700 font-bold px-3 py-1.5 rounded-lg text-[10px] transition-all duration-150 active:scale-95 hover:-translate-y-0.5 shadow-sm shadow-blue-600/20"
                                   >
                                     Detail
                                   </button>
