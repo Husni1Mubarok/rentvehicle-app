@@ -268,7 +268,7 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold text-gray-900">Riwayat Pemesanan</h2>
               {bookings.length > 0 && (
-                <Link href="/vehicles" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+                <Link href="/bookings" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
                   Lihat Semua
                 </Link>
               )}
@@ -299,7 +299,11 @@ export default function ProfilePage() {
                         : "bg-red-50 text-red-600 border-red-100";
 
                       return (
-                        <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                        <tr
+                          key={i}
+                          onClick={() => window.location.href = `/bookings/${b.id}`}
+                          className="hover:bg-blue-50/40 transition-colors cursor-pointer"
+                        >
                           <td className="py-4">
                             <div className="flex items-center gap-3">
                               <div className="relative w-14 h-10 rounded-lg overflow-hidden bg-gray-100 shrink-0 border border-gray-100">
