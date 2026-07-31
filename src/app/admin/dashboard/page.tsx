@@ -289,81 +289,153 @@ function AdminDashboardContent() {
             )}
 
             {/* TAB 2: KELOLA BOOKING */}
-            {activeTab === 'bookings' && (
-              <div className="animate-in fade-in duration-300">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-gray-800">Laporan Booking Penyewaan</h2>
-                  <button onClick={printReport} className="bg-gray-800 text-white font-bold px-4 py-2 rounded-xl text-xs hover:bg-gray-900 hide-on-print">
-                    🖨️ Print / Cetak Laporan
-                  </button>
-                </div>
-                
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50 text-gray-500 uppercase font-bold text-[10px] tracking-wider">
-                      <tr>
-                        <th className="px-4 py-3 rounded-l-xl">Kode Booking</th>
-                        <th className="px-4 py-3">Penyewa</th>
-                        <th className="px-4 py-3">WhatsApp</th>
-                        <th className="px-4 py-3">Kendaraan</th>
-                        <th className="px-4 py-3">Tanggal Sewa</th>
-                        <th className="px-4 py-3">Status</th>
-                        <th className="px-4 py-3 text-right">Total Harga</th>
-                        <th className="px-4 py-3 text-center rounded-r-xl hide-on-print">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {bookingsList.length === 0 ? (
+            {activeTab === 'bookings' && (() => {
+              const confirmedBookings = bookingsList.filter(b => 
+                b.status === "Confirmed" || b.status === "confirmed" || b.status === "paid" || b.status === "Completed" || b.status === "completed"
+              );
+              const confirmedRevenue = confirmedBookings.reduce((sum, b) => sum + (Number(b.total_price) || 0), 0);
+              const totalRevenue = bookingsList.reduce((sum, b) => sum + (Number(b.total_price) || 0), 0);
+
+              return (
+                <div className="animate-in fade-in duration-300">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">Laporan & Kelola Booking</h2>
+                      <p className="text-xs text-gray-500 font-medium">Ringkasan transaksi penyewaan kendaraan dan total pendapatan</p>
+                    </div>
+                    <button onClick={printReport} className="bg-gray-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs hover:bg-gray-900 transition-colors hide-on-print flex items-center gap-2">
+                      🖨️ Print / Cetak Laporan
+                    </button>
+                  </div>
+
+                  {/* Summary Stat Cards Total Pendapatan */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 hide-on-print">
+                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xl font-bold shadow-md shadow-emerald-500/20">
+                        💰
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider">Pendapatan Disetujui / Lunas</p>
+                        <h3 className="text-xl font-extrabold text-emerald-950 mt-0.5">
+                          Rp {confirmedRevenue.toLocaleString('id-ID')}
+                        </h3>
+                        <p className="text-[10px] text-emerald-700 font-semibold mt-0.5">
+                          {confirmedBookings.length} pesanan terkonfirmasi
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/70 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+                      <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl font-bold shadow-md shadow-blue-600/20">
+                        📊
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-extrabold text-blue-800 uppercase tracking-wider">Total Potensi Pendapatan</p>
+                        <h3 className="text-xl font-extrabold text-blue-950 mt-0.5">
+                          Rp {totalRevenue.toLocaleString('id-ID')}
+                        </h3>
+                        <p className="text-[10px] text-blue-700 font-semibold mt-0.5">
+                          Dari total {bookingsList.length} pesanan booking
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-purple-50 to-slate-50 border border-purple-200/70 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+                      <div className="w-12 h-12 rounded-xl bg-purple-600 text-white flex items-center justify-center text-xl font-bold shadow-md shadow-purple-600/20">
+                        📋
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-extrabold text-purple-800 uppercase tracking-wider">Total Transaksi Booking</p>
+                        <h3 className="text-xl font-extrabold text-purple-950 mt-0.5">
+                          {bookingsList.length} Pesanan
+                        </h3>
+                        <p className="text-[10px] text-purple-700 font-semibold mt-0.5">
+                          {bookingsList.length - confirmedBookings.length} pesanan pending/menunggu
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-gray-50 text-gray-500 uppercase font-bold text-[10px] tracking-wider">
                         <tr>
-                          <td colSpan={8} className="text-center py-8 text-gray-400 font-semibold">
-                            Belum ada pesanan booking masuk.
-                          </td>
+                          <th className="px-4 py-3 rounded-l-xl">Kode Booking</th>
+                          <th className="px-4 py-3">Penyewa</th>
+                          <th className="px-4 py-3">WhatsApp</th>
+                          <th className="px-4 py-3">Kendaraan</th>
+                          <th className="px-4 py-3">Tanggal Sewa</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3 text-right">Total Harga</th>
+                          <th className="px-4 py-3 text-center rounded-r-xl hide-on-print">Aksi</th>
                         </tr>
-                      ) : (
-                        bookingsList.map((b) => {
-                          const isConf = b.status === "Confirmed" || b.status === "confirmed" || b.status === "paid";
-                          const isComp = b.status === "Completed" || b.status === "completed";
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {bookingsList.length === 0 ? (
+                          <tr>
+                            <td colSpan={8} className="text-center py-8 text-gray-400 font-semibold">
+                              Belum ada pesanan booking masuk.
+                            </td>
+                          </tr>
+                        ) : (
+                          bookingsList.map((b) => {
+                            const isConf = b.status === "Confirmed" || b.status === "confirmed" || b.status === "paid";
+                            const isComp = b.status === "Completed" || b.status === "completed";
 
-                          const badgeClass = isConf 
-                            ? "bg-blue-50 text-blue-600 border-blue-100" 
-                            : isComp 
-                            ? "bg-green-50 text-green-600 border-green-100" 
-                            : "bg-amber-50 text-amber-600 border-amber-100";
+                            const badgeClass = isConf 
+                              ? "bg-blue-50 text-blue-600 border-blue-100" 
+                              : isComp 
+                              ? "bg-green-50 text-green-600 border-green-100" 
+                              : "bg-amber-50 text-amber-600 border-amber-100";
 
-                          return (
-                            <tr key={b.id} className="hover:bg-gray-50/50">
-                              <td className="px-4 py-3.5 font-bold text-gray-900">{b.booking_code || `#${String(b.id).slice(0, 8)}`}</td>
-                              <td className="px-4 py-3.5 font-semibold text-gray-800">{b.borrower_name || 'Pelanggan'}</td>
-                              <td className="px-4 py-3.5 text-gray-600 font-medium">{b.whatsapp_number || '-'}</td>
-                              <td className="px-4 py-3.5 text-gray-600 font-medium">{vehicles.find(v => v.id === b.vehicle_id)?.name || 'Kendaraan'}</td>
-                              <td className="px-4 py-3.5 text-xs text-gray-500 font-medium">
-                                {b.start_date ? `${b.start_date} s/d ${b.end_date}` : '-'}
-                              </td>
-                              <td className="px-4 py-3.5">
-                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${badgeClass}`}>
-                                  • {String(b.status || 'pending').toUpperCase()}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3.5 text-right font-bold text-blue-600">
-                                Rp {(b.total_price || 0).toLocaleString('id-ID')}
-                              </td>
-                              <td className="px-4 py-3.5 text-center hide-on-print">
-                                <button 
-                                  onClick={() => openDetailModal(b)} 
-                                  className="text-white bg-blue-600 hover:bg-blue-700 font-bold px-3 py-1.5 rounded-lg text-[10px] transition-colors"
-                                >
-                                  Detail
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })
+                            return (
+                              <tr key={b.id} className="hover:bg-gray-50/50">
+                                <td className="px-4 py-3.5 font-bold text-gray-900">{b.booking_code || `#${String(b.id).slice(0, 8)}`}</td>
+                                <td className="px-4 py-3.5 font-semibold text-gray-800">{b.borrower_name || 'Pelanggan'}</td>
+                                <td className="px-4 py-3.5 text-gray-600 font-medium">{b.whatsapp_number || '-'}</td>
+                                <td className="px-4 py-3.5 text-gray-600 font-medium">{vehicles.find(v => v.id === b.vehicle_id)?.name || 'Kendaraan'}</td>
+                                <td className="px-4 py-3.5 text-xs text-gray-500 font-medium">
+                                  {b.start_date ? `${b.start_date} s/d ${b.end_date}` : '-'}
+                                </td>
+                                <td className="px-4 py-3.5">
+                                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${badgeClass}`}>
+                                    • {String(b.status || 'pending').toUpperCase()}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3.5 text-right font-bold text-blue-600">
+                                  Rp {(b.total_price || 0).toLocaleString('id-ID')}
+                                </td>
+                                <td className="px-4 py-3.5 text-center hide-on-print">
+                                  <button 
+                                    onClick={() => openDetailModal(b)} 
+                                    className="text-white bg-blue-600 hover:bg-blue-700 font-bold px-3 py-1.5 rounded-lg text-[10px] transition-colors"
+                                  >
+                                    Detail
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                      {bookingsList.length > 0 && (
+                        <tfoot className="bg-gray-50/80 font-bold border-t border-gray-200 text-gray-800">
+                          <tr>
+                            <td colSpan={6} className="px-4 py-3 text-right uppercase text-xs tracking-wider text-gray-600">
+                              Total Pendapatan Terkonfirmasi:
+                            </td>
+                            <td className="px-4 py-3 text-right text-emerald-600 text-base font-extrabold">
+                              Rp {confirmedRevenue.toLocaleString('id-ID')}
+                            </td>
+                            <td className="hide-on-print"></td>
+                          </tr>
+                        </tfoot>
                       )}
-                    </tbody>
-                  </table>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       </div>
