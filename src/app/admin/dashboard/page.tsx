@@ -236,30 +236,6 @@ function AdminDashboardContent() {
           </div>
         </div>
 
-        {/* Tab Switcher Pills */}
-        <div className="flex items-center gap-2 mb-6 bg-gray-100/80 p-1.5 rounded-2xl w-max border border-gray-200/60 hide-on-print">
-          <button
-            onClick={() => setActiveTab('vehicles')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 active:scale-95 flex items-center gap-2 ${
-              activeTab === 'vehicles'
-                ? 'bg-white text-blue-600 shadow-sm border border-gray-100'
-                : 'text-gray-500 hover:text-gray-800 hover:bg-white/50'
-            }`}
-          >
-            <span>🚗</span> Kelola Produk Kendaraan
-          </button>
-          <button
-            onClick={() => setActiveTab('bookings')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 active:scale-95 flex items-center gap-2 ${
-              activeTab === 'bookings'
-                ? 'bg-white text-blue-600 shadow-sm border border-gray-100'
-                : 'text-gray-500 hover:text-gray-800 hover:bg-white/50'
-            }`}
-          >
-            <span>📋</span> Laporan & Kelola Booking
-          </button>
-        </div>
-
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden print-container">
           <div key={activeTab} className="p-6 animate-page-slide">
             {/* TAB 1: KELOLA KENDARAAN */}
