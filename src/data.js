@@ -457,13 +457,24 @@ function formatTanggal(iso) {
 
 /* ---------- Auth session (sederhana, bukan untuk produksi) ---------- */
 function getSession() {
-  return JSON.parse(sessionStorage.getItem("session") || "null");
+  if (typeof window === "undefined") return null;
+  try {
+    return JSON.parse(sessionStorage.getItem("session") || "null");
+  } catch {
+    return null;
+  }
 }
 function setSession(user) {
-  sessionStorage.setItem("session", JSON.stringify(user));
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem("session", JSON.stringify(user));
+  } catch {}
 }
 function clearSession() {
-  sessionStorage.removeItem("session");
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem("session");
+  } catch {}
 }
 function requireLogin(role) {
   const s = getSession();

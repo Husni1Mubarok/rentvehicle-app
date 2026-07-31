@@ -28,10 +28,10 @@ export default function Navbar() {
   useEffect(() => {
     async function syncSession() {
       // Force clear stuck session ONCE
-      if (!sessionStorage.getItem("stuck_session_cleared")) {
+      if (typeof window !== "undefined" && !sessionStorage.getItem("stuck_session_cleared")) {
         await supabase.auth.signOut();
         clearSession();
-        sessionStorage.setItem("stuck_session_cleared", "true");
+        if (typeof window !== "undefined") sessionStorage.setItem("stuck_session_cleared", "true");
         setSessionState(null);
         return;
       }
