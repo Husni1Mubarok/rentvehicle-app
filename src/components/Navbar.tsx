@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { getSession, setSession, clearSession } from "@/data";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -14,6 +14,68 @@ const navLinks = [
 ];
 
 const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
+
+function AdminNavLinks() {
+  const searchParams = useSearchParams();
+  const currentTab = searchParams ? searchParams.get("tab") || "vehicles" : "vehicles";
+
+  return (
+    <div className="flex items-center gap-1.5 bg-gray-100/80 p-1 rounded-2xl border border-gray-200/60">
+      <Link
+        href="/admin/dashboard?tab=vehicles"
+        className={`px-4 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 active:scale-95 flex items-center gap-1.5 ${
+          currentTab === "vehicles"
+            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+            : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+        }`}
+      >
+        <span>🚗</span> Kelola Kendaraan
+      </Link>
+      <Link
+        href="/admin/dashboard?tab=bookings"
+        className={`px-4 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 active:scale-95 flex items-center gap-1.5 ${
+          currentTab === "bookings"
+            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+            : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+        }`}
+      >
+        <span>📋</span> Kelola Booking
+      </Link>
+    </div>
+  );
+}
+
+function MobileAdminNavLinks({ setMobileOpen }: { setMobileOpen: (open: boolean) => void }) {
+  const searchParams = useSearchParams();
+  const currentTab = searchParams ? searchParams.get("tab") || "vehicles" : "vehicles";
+
+  return (
+    <div className="space-y-1">
+      <Link
+        href="/admin/dashboard?tab=vehicles"
+        onClick={() => setMobileOpen(false)}
+        className={`block px-4 py-2.5 rounded-xl text-sm font-extrabold transition-all ${
+          currentTab === "vehicles"
+            ? "bg-blue-600 text-white shadow-sm"
+            : "text-gray-700 hover:bg-gray-50"
+        }`}
+      >
+        🚗 Kelola Kendaraan
+      </Link>
+      <Link
+        href="/admin/dashboard?tab=bookings"
+        onClick={() => setMobileOpen(false)}
+        className={`block px-4 py-2.5 rounded-xl text-sm font-extrabold transition-all ${
+          currentTab === "bookings"
+            ? "bg-blue-600 text-white shadow-sm"
+            : "text-gray-700 hover:bg-gray-50"
+        }`}
+      >
+        📋 Kelola Booking
+      </Link>
+    </div>
+  );
+}
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -27,7 +89,6 @@ export default function Navbar() {
 
   useEffect(() => {
     async function syncSession() {
-      // Force clear stuck session ONCE
       if (typeof window !== "undefined" && !sessionStorage.getItem("stuck_session_cleared")) {
         await supabase.auth.signOut();
         clearSession();
@@ -36,7 +97,6 @@ export default function Navbar() {
         return;
       }
 
-      // Read local session first for fast UI render
       const localSess = getSession();
       if (localSess && !session) {
         setSessionState(localSess);
@@ -86,87 +146,68 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     setShowLogoutConfirm(false);
-    setProfileOpen(false);
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      await supabase.auth.signOut();
-      clearSession();
-      setSessionState(null);
-      router.push("/");
-      router.refresh();
-    } catch {
-      await supabase.auth.signOut();
-      clearSession();
-      setSessionState(null);
-      window.location.href = "/";
-    }
+    clearSession();
+    setSessionState(null);
+    await supabase.auth.signOut();
+    router.push("/");
+    router.refresh();
   };
 
-  const isAdmin = session?.role === 'admin' || session?.role === 'super_admin';
-  const isAdminRoute = pathname.startsWith('/admin');
-
-  if (isAuthPage) return null;
+  const isAdminRoute = pathname?.startsWith("/admin");
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-white border-b border-gray-100 shadow-sm">
-      <nav className="flex items-center justify-between px-6 md:px-10 py-3 max-w-7xl mx-auto">
-        {/* Logo */}
-        <Link href={isAdminRoute ? "/admin/dashboard" : "/"} className="flex items-center gap-2 text-xl font-black tracking-tight text-blue-600">
-          <Image
-            src="/logo.png"
-            alt="RentVehicle Logo"
-            width={28}
-            height={28}
-            style={{ width: "auto", height: "auto" }}
-            className="object-contain rounded-md"
-          />
-          <span>RentVehicle</span>
-        </Link>
+    <>
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100/80 shadow-xs transition-all">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-sky-500 flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              <Image src="/logo.png" alt="Logo" width={22} height={22} className="object-contain filter brightness-0 invert" />
+            </div>
+            <span className="text-lg font-black tracking-tight text-gray-900 group-hover:text-blue-600 transition-colors">
+              RentVehicle
+            </span>
+          </Link>
 
-        {!isAuthPage && (
-          <>
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center gap-8 text-[13px] font-semibold">
+          {/* Desktop Nav Links */}
+          {!isAuthPage && (
+            <nav className="hidden md:flex items-center gap-2">
               {isAdminRoute ? (
-                <>
-                  <Link
-                    href="/admin/dashboard?tab=vehicles"
-                    className="text-gray-700 hover:text-blue-600 font-bold transition-colors py-1"
-                  >
-                    Kelola Kendaraan
-                  </Link>
-                  <Link
-                    href="/admin/dashboard?tab=bookings"
-                    className="text-gray-700 hover:text-blue-600 font-bold transition-colors py-1"
-                  >
-                    Kelola Booking
-                  </Link>
-                </>
+                <Suspense fallback={
+                  <div className="flex items-center gap-1.5 bg-gray-100/80 p-1 rounded-2xl border border-gray-200/60 text-xs font-bold text-gray-500 px-4 py-1.5">
+                    Loading Admin Menu...
+                  </div>
+                }>
+                  <AdminNavLinks />
+                </Suspense>
               ) : (
-                navLinks.map((link) => {
-                  const active = pathname === link.href;
-                  return (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      className={`transition-colors py-1 ${
-                        active
-                          ? "text-blue-600 border-b-2 border-blue-600"
-                          : "text-gray-600 hover:text-blue-600"
-                      }`}
-                    >
-                      {link.label}
-                    </Link>
-                  );
-                })
+                <div className="flex items-center gap-1.5">
+                  {navLinks.map((link) => {
+                    const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+                    return (
+                      <Link
+                        key={link.label}
+                        href={link.href}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 flex items-center gap-1.5 ${
+                          active
+                            ? "bg-blue-50 text-blue-600 border border-blue-200/60 font-black shadow-xs"
+                            : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        {active && <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />}
+                        {link.label}
+                      </Link>
+                    );
+                  })}
+                </div>
               )}
 
-              {/* Profile Icon Button - Sejajar langsung di dalam baris navigasi */}
+              {/* Profile Icon Button */}
               {session ? (
-                <div ref={profileRef} className="relative flex items-center">
+                <div ref={profileRef} className="relative flex items-center ml-2">
                   <button
                     onClick={() => setProfileOpen((prev) => !prev)}
-                    className="rounded-full bg-gray-100 p-2.5 hover:bg-gray-200 transition-colors flex items-center justify-center text-gray-700 shadow-sm"
+                    className="rounded-full bg-gray-100 p-2.5 hover:bg-gray-200 active:scale-95 transition-all flex items-center justify-center text-gray-700 shadow-xs"
                     aria-label="Profil"
                     id="profile-menu-button"
                   >
@@ -175,7 +216,7 @@ export default function Navbar() {
                     </svg>
                   </button>
                   {profileOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-44 rounded-xl overflow-hidden bg-white border border-gray-100 shadow-2xl z-50">
+                    <div className="absolute right-0 top-full mt-2 w-44 rounded-xl overflow-hidden bg-white border border-gray-100 shadow-2xl z-50 animate-in fade-in zoom-in-95">
                       {(session.role === 'admin' || session.role === 'super_admin') && !isAdminRoute ? (
                         <Link
                           href="/admin/dashboard"
@@ -209,63 +250,62 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="px-5 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                  className="px-5 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 active:scale-95 transition-all shadow-sm"
                 >
                   Masuk
                 </Link>
               )}
-            </div>
+            </nav>
+          )}
 
-            {/* Mobile hamburger */}
+          {/* Mobile hamburger */}
+          {!isAuthPage && (
             <div className="flex md:hidden items-center gap-3">
               <button
-                className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
-                onClick={() => setMobileOpen((v) => !v)}
-                aria-label="Menu"
+                onClick={() => setMobileOpen((prev) => !prev)}
+                className="p-2 text-gray-600 hover:text-gray-900 active:scale-95 transition-all"
+                aria-label="Toggle Menu"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  {mobileOpen
-                    ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    : <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                  }
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  {mobileOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                  )}
                 </svg>
               </button>
             </div>
-          </>
-        )}
-      </nav>
+          )}
+        </div>
+      </header>
 
       {/* Mobile Menu */}
       {!isAuthPage && mobileOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 space-y-3">
+        <div className="md:hidden bg-white border-b border-gray-100 px-6 py-4 space-y-2 fixed top-16 left-0 right-0 z-40 shadow-xl animate-in slide-in-from-top-2">
           {isAdminRoute ? (
-            <>
-              <Link
-                href="/admin/dashboard?tab=vehicles"
-                onClick={() => setMobileOpen(false)}
-                className="block text-sm font-bold text-gray-700 hover:text-blue-600 py-1"
-              >
-                Kelola Kendaraan
-              </Link>
-              <Link
-                href="/admin/dashboard?tab=bookings"
-                onClick={() => setMobileOpen(false)}
-                className="block text-sm font-bold text-gray-700 hover:text-blue-600 py-1"
-              >
-                Kelola Booking
-              </Link>
-            </>
+            <Suspense fallback={<div className="text-sm font-bold text-gray-500 py-2">Loading Admin Menu...</div>}>
+              <MobileAdminNavLinks setMobileOpen={setMobileOpen} />
+            </Suspense>
           ) : (
-            navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="block text-sm font-semibold text-gray-700 hover:text-blue-600 py-1"
-              >
-                {link.label}
-              </Link>
-            ))
+            <div className="space-y-1">
+              {navLinks.map((link) => {
+                const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`block px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                      active
+                        ? "bg-blue-50 text-blue-600 border border-blue-200/60 font-black"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
           )}
           {!session ? (
             <Link
@@ -328,6 +368,6 @@ export default function Navbar() {
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 }
