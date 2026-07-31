@@ -15,7 +15,7 @@ export interface FilterValues {
 export default function VehicleFilters({ initialValues }: { initialValues?: FilterValues }) {
   const router = useRouter();
   const [values, setValues] = useState<FilterValues>(initialValues ?? {});
-  const [priceRange, setPriceRange] = useState<number>(2000000);
+  const [priceRange, setPriceRange] = useState<number>(10000000);
   const [isOpenMobile, setIsOpenMobile] = useState<boolean>(false);
 
   // Sync to query params
@@ -26,7 +26,7 @@ export default function VehicleFilters({ initialValues }: { initialValues?: Filt
         params.set(key, String(val));
       }
     });
-    if (priceRange !== 2000000) {
+    if (priceRange !== 10000000) {
       params.set('maxPrice', String(priceRange));
     }
     params.set('page', '1');
@@ -111,15 +111,15 @@ export default function VehicleFilters({ initialValues }: { initialValues?: Filt
         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Rentang Harga (Per Hari)</h4>
         <input
           type="range"
-          min="100000"
-          max="2000000"
+          min="0"
+          max="10000000"
           step="50000"
           value={priceRange}
           onChange={(e) => setPriceRange(Number(e.target.value))}
           className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
         />
         <div className="flex items-center justify-between text-xs font-bold text-gray-500">
-          <span>Rp 100rb</span>
+          <span>Rp 0</span>
           <span className="text-blue-600">Rp {priceRange.toLocaleString('id-ID')}</span>
         </div>
       </div>
