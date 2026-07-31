@@ -44,8 +44,9 @@ export async function register(formData: FormData) {
     return { error: error.message };
   }
 
-  // Auto-confirm aktif, jadi langsung redirect ke dashboard (middleware akan mengurus role redirect)
-  redirect("/dashboard");
+  // Karena user ingin agar diarahkan ke halaman login setelah daftar:
+  await supabase.auth.signOut();
+  redirect("/login?message=Pendaftaran berhasil, silakan login");
 }
 
 export async function logout() {

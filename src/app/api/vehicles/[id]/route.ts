@@ -41,12 +41,12 @@ export async function PUT(
       .update({
         name: body.name,
         type: body.type,
-        location: body.location,
+        location: body.location || 'Jakarta',
         transmission: body.transmission,
         capacity: Number(body.capacity),
         price_per_day: Number(body.price_per_day),
         description: body.description,
-        status: body.status,
+        status: body.status || 'available',
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
@@ -54,7 +54,32 @@ export async function PUT(
       .single();
 
     if (error || !updated) {
-      return NextResponse.json({ message: 'Gagal mengupdate kendaraan' }, { status: 400 });
+      return NextResponse.json({ message: 'Gagal mengupdate kendaraan: ' + (error?.message || 'Data tidak ditemukan') }, { status: 400 });
+    }
+
+    // Save/Update image URL in vehicle_images table
+    if (body.image_url) {
+      const { data: existingImages } = await supabase
+        .from('vehicle_images')
+        .select('*')
+        .eq('vehicle_id', id);
+
+      if (existingImages && existingImages.length > 0) {
+        await supabase
+          .from('vehicle_images')
+          .update({ image_url: body.image_url })
+          .eq('vehicle_id', id);
+      } else {
+        await supabase
+          .from('vehicle_images')
+          .insert([
+            {
+              vehicle_id: id,
+              image_url: body.image_url,
+              is_primary: true
+            }
+          ]);
+      }
     }
 
     return NextResponse.json({ message: 'Kendaraan berhasil diupdate', vehicle: updated });

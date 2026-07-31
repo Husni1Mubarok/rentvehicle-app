@@ -50,7 +50,7 @@ export async function proxy(request: NextRequest) {
     if (role === "admin" || role === "super_admin") {
       return NextResponse.redirect(new URL(redirectTo || "/admin/dashboard", request.url));
     }
-    return NextResponse.redirect(new URL(redirectTo || "/dashboard", request.url));
+    return NextResponse.redirect(new URL(redirectTo || "/", request.url));
   }
 
   // 2. Customer protected routes

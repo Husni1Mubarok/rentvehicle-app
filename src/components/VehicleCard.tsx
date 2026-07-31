@@ -26,9 +26,6 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm ${badge.cls}`}>
             {badge.label}
           </span>
-          <span className="text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm bg-amber-400 text-white">
-            PREMIUM
-          </span>
         </div>
 
         {primaryImage && isUrl(primaryImage.image_url) ? (
@@ -52,7 +49,7 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           {vehicle.name}
         </h3>
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-          MASTERPIECE • {vehicle.transmission ? vehicle.transmission.toUpperCase() : 'AUTO'}
+          {vehicle.type ? vehicle.type.toUpperCase() : 'MOBIL'} • {vehicle.transmission ? vehicle.transmission.toUpperCase() : 'OTOMATIS'}
         </p>
 
         {/* Specs row */}

@@ -20,6 +20,9 @@ export default function BookingPage() {
   const [tglMulai, setTglMulai] = useState('');
   const [tglSelesai, setTglSelesai] = useState('');
   
+  const [alamat, setAlamat] = useState('');
+  const [jamAmbil, setJamAmbil] = useState('');
+  
   const [ktpFile, setKtpFile] = useState<File | null>(null);
   const [simFile, setSimFile] = useState<File | null>(null);
   
@@ -72,7 +75,7 @@ export default function BookingPage() {
   const nextStep = () => {
     setErrorMsg('');
     if (step === 1) {
-      if (!nama || !wa || !tujuan || !tglMulai || !tglSelesai) {
+      if (!nama || !wa || !tujuan || !tglMulai || !tglSelesai || !alamat || !jamAmbil) {
         setErrorMsg('Semua kolom data peminjam dan jadwal harus diisi.');
         return;
       }
@@ -82,7 +85,7 @@ export default function BookingPage() {
       }
       setStep(2);
     } else if (step === 2) {
-      if (!nama || !wa || !tujuan || !tglMulai || !tglSelesai) {
+      if (!nama || !wa || !tujuan || !tglMulai || !tglSelesai || !alamat || !jamAmbil) {
         setErrorMsg('Harap lengkapi data pada Langkah 1 terlebih dahulu.');
         setStep(1);
         return;
@@ -99,7 +102,7 @@ export default function BookingPage() {
     setErrorMsg('');
     if (targetStep > step) {
       if (step === 1 || targetStep >= 2) {
-        if (!nama || !wa || !tujuan || !tglMulai || !tglSelesai) {
+        if (!nama || !wa || !tujuan || !tglMulai || !tglSelesai || !alamat || !jamAmbil) {
           setErrorMsg('Semua kolom data peminjam dan jadwal harus diisi.');
           return;
         }
@@ -123,13 +126,60 @@ export default function BookingPage() {
     }
   };
 
+  const readAndCompressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1000;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.75));
+          } else {
+            resolve(e.target?.result as string);
+          }
+        };
+        img.onerror = () => resolve(e.target?.result as string);
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    });
+  };
+
   const submitBooking = async () => {
     setErrorMsg('');
     setSubmitting(true);
     
     try {
-      let ktpUrl = 'https://via.placeholder.com/800x600.png?text=KTP+Dokumen';
-      let simUrl = 'https://via.placeholder.com/800x600.png?text=SIM+Dokumen';
+      let ktpUrl = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800';
+      let simUrl = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=800';
+
+      if (ktpFile) {
+        const ktpBase64 = await readAndCompressImage(ktpFile);
+        if (ktpBase64) ktpUrl = ktpBase64;
+      }
+
+      if (simFile) {
+        const simBase64 = await readAndCompressImage(simFile);
+        if (simBase64) simUrl = simBase64;
+      }
 
       const formData = new FormData();
       if (session?.user?.id) {
@@ -140,10 +190,13 @@ export default function BookingPage() {
       formData.append('whatsapp_number', wa);
       formData.append('start_date', tglMulai);
       formData.append('end_date', tglSelesai);
-      formData.append('purpose', tujuan);
+      
+      const finalPurpose = `${tujuan}\n[Alamat Penjemputan: ${alamat}]\n[Jam Diambil: ${jamAmbil}]`;
+      formData.append('purpose', finalPurpose);
+      
       formData.append('total_price', totalPrice.toString());
-      if (ktpUrl) formData.append('ktp_url', ktpUrl);
-      if (simUrl) formData.append('sim_url', simUrl);
+      formData.append('ktp_url', ktpUrl);
+      formData.append('sim_url', simUrl);
 
       const res = await fetch('/api/bookings', {
         method: 'POST',
@@ -254,63 +307,100 @@ export default function BookingPage() {
             </div>
             
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-2">Nama Peminjam</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">👤</span>
+              <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Nama Peminjam</label>
+              <div className="relative group">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors">👤</span>
                 <input 
                   type="text" 
                   value={nama} 
                   onChange={e => setNama(e.target.value)} 
                   placeholder="Sesuai KTP" 
-                  className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] border border-gray-100 rounded-xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-2xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all shadow-sm" 
                 />
               </div>
             </div>
             
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-2">Nomor WhatsApp</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">💬</span>
+              <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Nomor WhatsApp</label>
+              <div className="relative group">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors">💬</span>
                 <input 
                   type="tel" 
                   value={wa} 
                   onChange={e => setWa(e.target.value)} 
                   placeholder="08123456789" 
-                  className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] border border-gray-100 rounded-xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-2xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all shadow-sm" 
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-2">Tanggal Mulai</label>
-                <input 
-                  type="date" 
-                  value={tglMulai} 
-                  onChange={e => setTglMulai(e.target.value)} 
-                  className="w-full px-4 py-3 bg-[#F8FAFC] border border-gray-100 rounded-xl text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors cursor-pointer" 
-                />
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Tanggal Mulai</label>
+                <div className="relative group">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors">📅</span>
+                  <input 
+                    type="date" 
+                    value={tglMulai} 
+                    onChange={e => setTglMulai(e.target.value)} 
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-2xl text-sm font-medium text-gray-800 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all shadow-sm cursor-pointer" 
+                  />
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-2">Tanggal Selesai</label>
-                <input 
-                  type="date" 
-                  value={tglSelesai} 
-                  onChange={e => setTglSelesai(e.target.value)} 
-                  className="w-full px-4 py-3 bg-[#F8FAFC] border border-gray-100 rounded-xl text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors cursor-pointer" 
-                />
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Tanggal Selesai</label>
+                <div className="relative group">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors">📅</span>
+                  <input 
+                    type="date" 
+                    value={tglSelesai} 
+                    onChange={e => setTglSelesai(e.target.value)} 
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-2xl text-sm font-medium text-gray-800 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all shadow-sm cursor-pointer" 
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Jam Diambil</label>
+                <div className="relative group">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors">⏰</span>
+                  <input 
+                    type="time" 
+                    value={jamAmbil} 
+                    onChange={e => setJamAmbil(e.target.value)} 
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-2xl text-sm font-medium text-gray-800 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all shadow-sm cursor-pointer" 
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Tujuan Perjalanan</label>
+                <div className="relative group">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors">🎯</span>
+                  <input 
+                    type="text" 
+                    value={tujuan} 
+                    onChange={e => setTujuan(e.target.value)} 
+                    placeholder="Contoh: Perjalanan dinas" 
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-2xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all shadow-sm" 
+                  />
+                </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-2">Tujuan Perjalanan</label>
-              <textarea 
-                rows={3} 
-                value={tujuan} 
-                onChange={e => setTujuan(e.target.value)} 
-                placeholder="Contoh: Perjalanan dinas" 
-                className="w-full px-4 py-3 bg-[#F8FAFC] border border-gray-100 rounded-xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors resize-none" 
-              />
+              <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Alamat Penjemputan</label>
+              <div className="relative group">
+                <span className="absolute left-4 top-5 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors">📍</span>
+                <textarea 
+                  rows={3} 
+                  value={alamat} 
+                  onChange={e => setAlamat(e.target.value)} 
+                  placeholder="Alamat lengkap lokasi penjemputan" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-2xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all shadow-sm resize-none" 
+                />
+              </div>
             </div>
             
             <div className="flex justify-end pt-4">

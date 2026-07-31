@@ -23,6 +23,8 @@ export default function ProfilePage() {
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
 
+  const [userRole, setUserRole] = useState("customer");
+
   useEffect(() => {
     async function loadProfile() {
       const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -34,6 +36,7 @@ export default function ProfilePage() {
           .single();
         
         setUser(authUser);
+        setUserRole(profile?.role || "customer");
         setName(profile?.name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || "");
         setEmail(authUser.email || "");
         setPhone(profile?.phone || authUser.user_metadata?.phone || "");
@@ -44,7 +47,7 @@ export default function ProfilePage() {
         try {
           let { data: bookingData } = await supabase
             .from("bookings")
-            .select("*, vehicles(name, images:vehicle_images(image_url))")
+            .select("*")
             .eq("user_id", authUser.id)
             .order("created_at", { ascending: false });
 
@@ -54,7 +57,7 @@ export default function ProfilePage() {
             if (userPhone) {
               const { data: phoneBookings } = await supabase
                 .from("bookings")
-                .select("*, vehicles(name, images:vehicle_images(image_url))")
+                .select("*")
                 .eq("whatsapp_number", userPhone)
                 .order("created_at", { ascending: false });
               if (phoneBookings && phoneBookings.length > 0) {
@@ -66,7 +69,7 @@ export default function ProfilePage() {
           if (!bookingData || bookingData.length === 0) {
             const { data: allBookings } = await supabase
               .from("bookings")
-              .select("*, vehicles(name, images:vehicle_images(image_url))")
+              .select("*")
               .order("created_at", { ascending: false })
               .limit(10);
             if (allBookings) {
@@ -74,8 +77,21 @@ export default function ProfilePage() {
             }
           }
 
-          if (bookingData) {
-            setBookings(bookingData);
+          if (bookingData && bookingData.length > 0) {
+            const { data: vehicleList } = await supabase
+              .from("vehicles")
+              .select("id, name, images:vehicle_images(image_url)");
+
+            const mappedBookings = bookingData.map((b) => {
+              const v = vehicleList?.find((item) => item.id === b.vehicle_id);
+              return {
+                ...b,
+                vehicles: v || { name: "Kendaraan", images: [] },
+              };
+            });
+            setBookings(mappedBookings);
+          } else {
+            setBookings([]);
           }
         } catch (e) {
           console.error(e);
@@ -107,7 +123,9 @@ export default function ProfilePage() {
             </div>
 
             <h2 className="text-xl font-bold text-gray-900 leading-tight">{name || "Pengguna"}</h2>
-            <p className="text-xs font-bold text-blue-600 mt-1 mb-6">Member</p>
+            <p className="text-xs font-bold text-blue-600 mt-1 mb-6 uppercase tracking-wider">
+              {userRole === 'admin' || userRole === 'super_admin' ? 'Administrator' : 'Member'}
+            </p>
 
             <div className="w-full grid grid-cols-1 gap-2 pt-4 border-t border-gray-100">
               <div className="flex flex-col">
@@ -285,7 +303,7 @@ export default function ProfilePage() {
                           <td className="py-4">
                             <div className="flex items-center gap-3">
                               <div className="relative w-14 h-10 rounded-lg overflow-hidden bg-gray-100 shrink-0 border border-gray-100">
-                                <Image src={imgUrl} alt={b.vehicles?.name || 'Mobil'} fill className="object-cover" />
+                                <Image src={imgUrl} alt={b.vehicles?.name || 'Mobil'} fill sizes="56px" className="object-cover" />
                               </div>
                               <div>
                                 <p className="font-bold text-gray-900 text-sm leading-snug">{b.vehicles?.name || 'Kendaraan'}</p>

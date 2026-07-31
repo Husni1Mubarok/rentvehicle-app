@@ -42,7 +42,7 @@ export async function requireRole(request: NextRequest, allowedRoles: string[]) 
   if (!allowedRoles.includes(role)) {
     // Redirect based on trying to access admin area
     if (currentPath.startsWith('/admin')) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.redirect(new URL('/profile', request.url));
     }
     // For other protected areas, fallback to login
     return NextResponse.redirect(new URL('/login', request.url));

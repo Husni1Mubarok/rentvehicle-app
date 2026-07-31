@@ -16,6 +16,7 @@ export default function VehicleFilters({ initialValues }: { initialValues?: Filt
   const router = useRouter();
   const [values, setValues] = useState<FilterValues>(initialValues ?? {});
   const [priceRange, setPriceRange] = useState<number>(2000000);
+  const [isOpenMobile, setIsOpenMobile] = useState<boolean>(false);
 
   // Sync to query params
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function VehicleFilters({ initialValues }: { initialValues?: Filt
     if (priceRange !== 2000000) {
       params.set('maxPrice', String(priceRange));
     }
+    params.set('page', '1');
     router.replace(`/vehicles?${params.toString()}`);
   }, [values, priceRange, router]);
 
@@ -46,15 +48,39 @@ export default function VehicleFilters({ initialValues }: { initialValues?: Filt
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-8 text-gray-800">
-      <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-        <h3 className="font-bold text-gray-900 flex items-center gap-2">
-          <span>⚙️</span> Filter
-        </h3>
-        <button onClick={() => { setValues({}); setPriceRange(2000000); }} className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+    <div className="bg-white p-5 md:p-6 rounded-2xl border border-gray-100 shadow-sm text-gray-800">
+      {/* Header filter toggle on mobile */}
+      <div className="flex items-center justify-between pb-3 lg:pb-4 border-b border-gray-100">
+        <button 
+          onClick={() => setIsOpenMobile(prev => !prev)}
+          className="font-bold text-gray-900 flex items-center gap-2 lg:cursor-default w-full justify-between lg:justify-start"
+        >
+          <span className="flex items-center gap-2">
+            <span>⚙️</span> Filter Kendaraan
+          </span>
+          <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg lg:hidden">
+            {isOpenMobile ? 'Sembunyikan' : 'Buka Filter'}
+          </span>
+        </button>
+        <button 
+          onClick={() => { setValues({}); setPriceRange(2000000); }} 
+          className="hidden lg:block text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors ml-4"
+        >
           Reset
         </button>
       </div>
+
+      {/* Filter Body - Always open on LG, collapsible on Mobile */}
+      <div className={`space-y-6 pt-5 ${isOpenMobile ? 'block' : 'hidden lg:block'}`}>
+        <div className="flex justify-between items-center lg:hidden pb-2">
+          <span className="text-xs text-gray-400 font-medium">Pilih opsi penyaringan:</span>
+          <button 
+            onClick={() => { setValues({}); setPriceRange(2000000); }} 
+            className="text-xs font-bold text-blue-600 hover:underline"
+          >
+            Reset Filter
+          </button>
+        </div>
 
       {/* Tipe Kendaraan */}
       <div className="space-y-3">
@@ -139,6 +165,7 @@ export default function VehicleFilters({ initialValues }: { initialValues?: Filt
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 }

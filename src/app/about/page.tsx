@@ -80,14 +80,14 @@ export default function AboutPage() {
                 <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100">📍</div>
                 <div>
                   <div className="text-sm font-bold text-gray-900">Alamat Kantor</div>
-                  <div className="text-sm text-gray-600">Jl. Sudirman No. 123, Jakarta Selatan</div>
+                  <div className="text-sm text-gray-600">Jalan Romokalisari, Surabaya</div>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100">📞</div>
                 <div>
                   <div className="text-sm font-bold text-gray-900">Telepon / WhatsApp</div>
-                  <div className="text-sm text-gray-600">+62 812-3456-7890</div>
+                  <div className="text-sm text-gray-600">087761709094</div>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -104,6 +104,7 @@ export default function AboutPage() {
               src="/login-bg.jpg" 
               alt="Office Location" 
               fill 
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover opacity-80"
             />
             <div className="absolute inset-0 bg-blue-900/20 mix-blend-multiply" />

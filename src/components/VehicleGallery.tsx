@@ -12,12 +12,12 @@ export default function VehicleGallery({ images }: { images: VehicleImage[] }) {
   return (
     <div className="space-y-4">
       <div className="relative h-96 w-full cursor-pointer" onClick={openModal}>
-        <Image src={selected.image_url} alt="Vehicle image" layout="fill" objectFit="cover" className="rounded-lg" />
+        <Image src={selected.image_url} alt="Vehicle image" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover rounded-lg" />
       </div>
       <div className="grid grid-cols-4 gap-2">
         {images.map((img) => (
           <button key={img.id} onClick={() => setSelected(img)} className={`relative h-24 w-full rounded ${img.id === selected.id ? 'ring-2 ring-blue-600' : ''}`}>
-            <Image src={img.image_url} alt="thumb" layout="fill" objectFit="cover" className="rounded" />
+            <Image src={img.image_url} alt="thumb" fill sizes="100px" className="object-cover rounded" />
           </button>
         ))}
       </div>
@@ -25,7 +25,7 @@ export default function VehicleGallery({ images }: { images: VehicleImage[] }) {
       {isOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={closeModal}>
           <div className="relative w-11/12 max-w-3xl h-3/4" onClick={(e) => e.stopPropagation()}>
-            <Image src={selected.image_url} alt="Vehicle large" layout="fill" objectFit="contain" className="rounded" />
+            <Image src={selected.image_url} alt="Vehicle large" fill sizes="(max-width: 1024px) 100vw, 80vw" className="object-contain rounded" />
             <button onClick={closeModal} className="absolute top-2 right-2 text-white text-2xl">&times;</button>
           </div>
         </div>
