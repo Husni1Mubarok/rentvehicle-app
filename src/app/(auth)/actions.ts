@@ -9,7 +9,7 @@ export async function login(formData: FormData, redirectTo: string = "/") {
   const password = formData.get("password") as string;
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data: authData, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -18,8 +18,22 @@ export async function login(formData: FormData, redirectTo: string = "/") {
     return { error: error.message };
   }
 
+  let finalRedirect = redirectTo;
+  
+  if (authData?.user) {
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', authData.user.id)
+      .single();
+      
+    if (userProfile && (userProfile.role === 'admin' || userProfile.role === 'super_admin')) {
+      finalRedirect = '/admin/dashboard';
+    }
+  }
+
   revalidatePath("/", "layout");
-  redirect(redirectTo);
+  redirect(finalRedirect);
 }
 
 export async function register(formData: FormData) {

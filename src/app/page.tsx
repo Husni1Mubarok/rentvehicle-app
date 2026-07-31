@@ -126,35 +126,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ───────────────────────── KATEGORI KENDARAAN ───────────────────────── */}
-      <section className="py-20 px-6 bg-gray-50/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Kategori Kendaraan</h2>
-            <Link href="/vehicles" className="text-sm font-semibold text-blue-600 hover:text-blue-700 hidden sm:flex items-center gap-2">
-              Lihat Semua <span>→</span>
-            </Link>
-          </div>
-          <p className="text-sm text-gray-500 -mt-6 mb-8 font-light">Pilih tipe mobil yang sesuai dengan kebutuhan Anda.</p>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { label: "Luxury", count: "12 Mobil", icon: "✨", color: "text-blue-500", bg: "bg-blue-50" },
-              { label: "SUV", count: "14 Mobil", icon: "🏢", color: "text-purple-500", bg: "bg-purple-50" },
-              { label: "Electric", count: "6 Mobil", icon: "⚡", color: "text-green-500", bg: "bg-green-50" },
-              { label: "Logistics", count: "15 Mobil", icon: "🚚", color: "text-orange-500", bg: "bg-orange-50" },
-            ].map((cat, i) => (
-              <div key={i} className="bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-xl transition-shadow border border-gray-100 shadow-sm">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-4 ${cat.bg} ${cat.color}`}>
-                  {cat.icon}
-                </div>
-                <h3 className="font-bold text-gray-900 mb-1">{cat.label}</h3>
-                <p className="text-xs text-gray-400 font-medium">{cat.count}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* ───────────────────────── ARMADA TERPOPULER ───────────────────────── */}
       <section className="py-20 px-6 bg-white">

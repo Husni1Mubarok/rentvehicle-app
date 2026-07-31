@@ -89,6 +89,7 @@ export default function Navbar() {
   };
 
   const isAdmin = session?.role === 'admin' || session?.role === 'super_admin';
+  const isAdminRoute = pathname.startsWith('/admin');
 
   if (isAuthPage) return null;
 
@@ -96,7 +97,7 @@ export default function Navbar() {
     <header className="fixed top-0 w-full z-50 bg-white border-b border-gray-100 shadow-sm">
       <nav className="flex items-center justify-between px-6 md:px-10 py-3 max-w-7xl mx-auto">
         {/* Logo */}
-        <Link href={isAdmin ? "/admin/dashboard" : "/"} className="flex items-center gap-2 text-xl font-black tracking-tight text-blue-600">
+        <Link href={isAdminRoute ? "/admin/dashboard" : "/"} className="flex items-center gap-2 text-xl font-black tracking-tight text-blue-600">
           <Image
             src="/logo.png"
             alt="RentVehicle Logo"
@@ -112,7 +113,7 @@ export default function Navbar() {
           <>
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-8 text-[13px] font-semibold">
-              {isAdmin ? (
+              {isAdminRoute ? (
                 <>
                   <Link
                     href="/admin/dashboard?tab=vehicles"
@@ -161,7 +162,7 @@ export default function Navbar() {
                   </button>
                   {profileOpen && (
                     <div className="absolute right-0 top-full mt-2 w-44 rounded-xl overflow-hidden bg-white border border-gray-100 shadow-2xl z-50">
-                      {session.role === 'admin' || session.role === 'super_admin' ? (
+                      {(session.role === 'admin' || session.role === 'super_admin') && !isAdminRoute ? (
                         <Link
                           href="/admin/dashboard"
                           onClick={() => setProfileOpen(false)}
@@ -175,7 +176,7 @@ export default function Navbar() {
                         onClick={() => setProfileOpen(false)}
                         className="flex w-full items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
-                        Profil & Riwayat
+                        Profil
                       </Link>
                       <div className="border-t border-gray-100" />
                       <button
@@ -223,7 +224,7 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {!isAuthPage && mobileOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 space-y-3">
-          {isAdmin ? (
+          {isAdminRoute ? (
             <>
               <Link
                 href="/admin/dashboard?tab=vehicles"
@@ -252,7 +253,7 @@ export default function Navbar() {
               </Link>
             ))
           )}
-          {!session && (
+          {!session ? (
             <Link
               href="/login"
               onClick={() => setMobileOpen(false)}
@@ -260,6 +261,26 @@ export default function Navbar() {
             >
               Masuk
             </Link>
+          ) : (
+            <>
+              <div className="border-t border-gray-100 my-2" />
+              <Link
+                href="/profile"
+                onClick={() => setMobileOpen(false)}
+                className="block text-sm font-bold text-gray-700 hover:text-blue-600 py-2"
+              >
+                Profil
+              </Link>
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  setShowLogoutConfirm(true);
+                }}
+                className="w-full text-left block text-sm font-bold text-red-500 hover:text-red-600 py-2"
+              >
+                Logout
+              </button>
+            </>
           )}
         </div>
       )}
